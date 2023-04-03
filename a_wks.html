@@ -112,7 +112,9 @@
             <h2>Registration</h2>
             <div class="example2">
                 <!-- <form action="https://mi-teichmann.de/formVars.php" method="post" target="_blank"> -->
-                <form action="#" method="post" target="_blank">
+
+                <!-- <form action="#" method="post" target="_blank"> -->
+                <form action="SaveForm()" method="post" target="_blank">
                     <div>
                         <label for="Vorname">First Name</label>
                         <input type="text" name="vorname" value="" placeholder="First Name" />
@@ -149,7 +151,9 @@
         </section>
     </main>
     <footer>
-        <address><a href="imprint.html">Imprint</a> | <a href="privacy.html">Privacy</a> | <a href="https://github.com/afdzlebron/22ws_bok_html_project" target="_blank">Github-Repository</a></address>
+        <address><a href="imprint.html">Imprint</a> | <a href="privacy.html">Privacy</a> | <a
+                href="https://github.com/afdzlebron/22ws_bok_html_project" target="_blank">Github-Repository</a>
+        </address>
     </footer>
     <script src="https://code.jquery.com/jquery-latest.js"></script>
     <script src="http://cdn.rawgit.com/noelboss/featherlight/1.7.1/release/featherlight.min.js" type="text/javascript"
@@ -161,6 +165,12 @@
                 $('nav').toggleClass('responsive');
             });
         });
+
+        function SaveForm() {
+            alert(
+                "Your registration was successful"
+            );
+        }
     </script>
 </body>
 
