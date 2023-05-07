@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Attention Workshop</title>
+    <!-- icon -->
+    <link rel="icon" href="./img/attent.ico" />
+    <!-- css -->
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <!-- Webfont -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="./fontawesome/css/all.css" rel="stylesheet">
+</head>
+
+
+<body>
+
+    <header id="top">
+        <nav>
+            <a href="index.html">The Attention System (ATS)</a>
+            <a href="a_alr.html">Alerting</a>
+            <a href="a_ort.html">Orienting</a>
+            <a href="a_exe.html">Executive</a>
+            <a href="a_ext.html">Extending the ATS-Framework</a>
+            <a href="a_lit.html">Literature</a>
+            <a href="#" target="_blank">Attention Training Workshop</a>
+        </nav>
+        <h1><i class="fa fa-brain"></i> Attention Training Workshop</h1>
+    </header>
+    <main>
+
+        <section>
+            <div>
+
+                <p>We cordially invite you to participate in our forthcoming attention training workshop, designed to
+                    enhance cognitive abilities and improve focus and concentration. This workshop is founded on
+                    empirical research from the fields of cognitive psychology, neuroscience, and attentional theory.
+                </p>
+                <p>The workshop curriculum will explore the latest research-based strategies for enhancing attention and
+                    cognitive control, with particular emphasis on reducing distractions, improving cognitive clarity,
+                    and optimizing the allocation of attentional resources. Workshop participants will have the
+                    opportunity to engage in interactive exercises designed to develop and practice these strategies.
+                </p>
+                <p>Additionally, participants will receive individualized feedback and support from expert trainers, who
+                    will work with them to tailor attention training strategies to their specific needs. Furthermore,
+                    participants will have the opportunity to network and collaborate with like-minded individuals from
+                    diverse academic and professional backgrounds.</p>
+                <p>This workshop is suitable for individuals seeking to gain a competitive edge in their academic or
+                    professional pursuits. By participating in this workshop, attendees will have the chance to acquire
+                    the latest evidence-based attention training strategies and techniques to help them achieve their
+                    cognitive and academic goals.</p>
+                <p>To secure your place in this unique and evidence-based workshop, we invite you to register today.</p>
+            </div>
+
+
+
+        </section>
+        <section>
+            <aside>
+                <table>
+                    <caption>Next Workshops</caption>
+                    <tr>
+                        <th>Workshop Number</th>
+                        <th>Date</th>
+                    </tr>
+                    <tr>
+                        <td>1st Workshop</td>
+                        <td>June 24, 2023</td>
+
+                    </tr>
+                    <tr>
+                        <td>2nd Workshop</td>
+                        <td>June 25, 2023</td>
+                    </tr>
+                    <tr>
+                        <td>3rd Workshop</td>
+                        <td>June 26, 2023</td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td> </td>
+                    </tr>
+                </table>
+            </aside>
+        </section>
+        <section>
+            <h2>Registration</h2>
+            <div class="example2">
+                <!-- <form action="https://mi-teichmann.de/formVars.php" method="post" target="_blank"> -->
+                <!-- <form action="#" method="post" target="_blank"> -->
+                <form action="connect.php" method="POST">
+                <div>
+                    <label for="Vorname">First Name</label>
+                    <input type="text" name="vorname" value="" placeholder="First Name" />
+                </div>
+                <div>
+                    <label for="Nachname">Last Name</label>
+                    <input type="text" name="nachname" value="" placeholder="Last Name" />
+                </div>
+
+                <div>
+                    <label for="Email">e-mail</label>
+                    <input type="email" name="email" value="" placeholder="e-mail" />
+                </div>
+
+                <div>
+                    <label for="formSelect1">Workshop</label>
+                    <select id="formSelect1" name="selection1[]">
+                        <option value="" disabled="disabled">please choose one option.</option>
+                        <option value="1">1st Workshop (June 24, 2023)</option>
+                        <option value="2">2nd Workshop (June 25, 2023)</option>
+                        <option value="3">3rd Workshop (June 26, 2023)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="message">Special Requests</label>
+                    <textarea name="message"></textarea>
+                </div>
+                <div>
+                    <input type="submit" value="send" id="submit"/>
+                
+                    <input type="reset" value="clear" />
+                </div>
+                </form>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <address><a href="imprint.html">Imprint</a> | <a href="privacy.html">Privacy</a> | <a
+                href="https://github.com/afdzlebron/22ws_bok_html_project" target="_blank">Github-Repository</a>
+        </address>
+    </footer>
+    <script src="https://code.jquery.com/jquery-latest.js"></script>
+    <script src="http://cdn.rawgit.com/noelboss/featherlight/1.7.1/release/featherlight.min.js" type="text/javascript"
+        charset="utf-8"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $('header a.icon').click(function () {
+                $('nav').toggleClass('responsive');
+            });
+        });
+    </script>
+</body>
+
+</html>
