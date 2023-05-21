@@ -452,7 +452,47 @@
             
         </code></pre>
 
-    
+        Here is the Makefile:
+        <pre><code>
+            CXX = g++
+            #CXX = clang++ # tends to give better error messages
+            CXXFLAGS=--std=c++14 
+            HEADERS = $(wildcard *.hpp)
+            OBJECTS = $(addsuffix .o, $(basename $(filter-out imageTest.cpp, $(wildcard *.cpp)))) complex.o poly.o
+            
+            all: clean compile test run format
+            
+            %.o: %.cpp $(HEADERS)
+                $(CXX) -c $< $(CXXFLAGS)
+            
+            %Main: %Main.o %.o
+                $(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
+            
+            compile: imageMain
+            
+            imageMain: imageMain.o newton_fractal.o image.o complex.o poly.o
+                $(CXX) -o $@ $^ $(CXXFLAGS) -lgtest -lpthread
+            
+            imageTest: imageTest.o image.o
+                $(CXX) -o $@ $^ $(CXXFLAGS) -lgtest -lpthread -lgtest_main
+                ./imageTest
+            
+            test: imageTest
+                ./$<
+            
+            run: imageMain
+                ./$<
+            
+            clean:
+                rm -f imageMain imageTest *.o *Main *.ppm 
+            
+            format:
+                clang-format -i *.cpp *.hpp
+            
+            
+            
+        </code></pre>
+
         <pre><code>
         </code></pre>
 
