@@ -30,16 +30,132 @@
         <h1><i class="fa fa-brain"></i> Literature</h1>
     </header>
     <main>
+        Here is complex.hpp:
         <pre><code>
-            #include &lt;iostream&gt;
-            using namespace std;
+            #ifndef COMPLEX_H
+            #define COMPLEX_H
             
-            int main() {
-                cout << "Hello, world!" << endl;
-                return 0;
-            }
+            struct Complex {
+              double re;
+              double im;
+            };
+            
+            bool equal(Complex a, Complex b);
+            Complex mult(Complex a, Complex b);
+            Complex div(Complex a, Complex b);
+            Complex add(Complex a, Complex b);
+            Complex inverse(Complex z);
+            Complex sub(Complex a, Complex b);
+            void print(Complex z);
+            
+            #endif // COMPLEX_H
+            
             </code></pre>
-            
+
+        Here is complex.cpp:
+        <pre><code>
+            #include "complex.hpp"
+
+#include <cmath>
+#include <cstdio>
+
+bool equal(Complex a, Complex b) { return (a.re == b.re) && (a.im == b.im); }
+
+Complex mult(Complex a, Complex b) {
+  Complex result;
+  result.re = a.re * b.re - a.im * b.im;
+  result.im = a.re * b.im + a.im * b.re;
+  if (std::isnan(result.re) && std::isnan(result.im)) {
+    result.re = 0;
+    result.im = 0;
+  }
+  return result;
+}
+
+Complex div(Complex a, Complex b) {
+  double div = b.re * b.re + b.im * b.im;
+  Complex result;
+  result.re = (a.re * b.re + a.im * b.im) / div;
+  result.im = (a.im * b.re - a.re * b.im) / div;
+  if (std::isnan(result.re) && std::isnan(result.im)) {
+    result.re = 0;
+    result.im = 0;
+  }
+  return result;
+}
+
+Complex add(Complex a, Complex b) {
+  Complex result;
+  result.re = a.re + b.re;
+  result.im = a.im + b.im;
+  if (std::isnan(result.re) && std::isnan(result.im)) {
+    result.re = 0;
+    result.im = 0;
+  }
+  return result;
+}
+
+Complex inverse(Complex z) {
+  double div = z.re * z.re + z.im * z.im;
+  Complex result;
+  result.re = z.re / div;
+  result.im = -z.im / div;
+  if (std::isnan(result.re) && std::isnan(result.im)) {
+    result.re = 0;
+    result.im = 0;
+  }
+  return result;
+}
+
+Complex sub(Complex a, Complex b) {
+  Complex result;
+  result.re = a.re - b.re;
+  result.im = a.im - b.im;
+  if (std::isnan(result.re) && std::isnan(result.im)) {
+    result.re = 0;
+    result.im = 0;
+  }
+  return result;
+}
+
+void print(Complex z) { printf("(%g + %gi)", z.re, z.im); }
+        </code></pre>
+
+        Here is poly.hpp:
+        <pre><code>
+        #ifndef POLYNOM_H
+        #define POLYNOM_H
+
+        #include "complex.hpp"
+
+        class Polynom {
+        public:
+        Complex poly(Complex z);
+        Complex derived_poly(Complex z);
+        };
+
+        #endif  // POLYNOM_H
+
+        </code></pre>
+        Here is nh.hpp:
+        <pre><code>
+        </code></pre>
+        Here is nh.hpp:
+        <pre><code>
+        </code></pre>
+        Here is nh.hpp:
+        <pre><code>
+        </code></pre>
+        Here is nh.hpp:
+        <pre><code>
+        </code></pre>
+        Here is nh.hpp:
+        <pre><code>
+        </code></pre>
+        Here is nh.hpp:
+        <pre><code>
+        </code></pre>
+
 
         <section>
             <a href="#top" style="padding-left: 10px;">upwards</a>
