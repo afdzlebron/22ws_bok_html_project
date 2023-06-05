@@ -29,508 +29,580 @@
     </nav>
     <h1><i class="fa fa-brain"></i> Literature</h1>
   </header>
-  <main>
-    Here is complex.cpp:
-    <pre><code>
-      #include "complex.hpp"
-      
-      #include <cstdio>
-      
-      // x+iy + (x'+iy') = (x+x') + i (y+y')
-      Complex add(Complex a, Complex b) {
-        Complex c;
-        c.im = a.im + b.im;
-        c.re = a.re + b.re;
-        return c;
-      }
-      
-      // (x+iy) * (x'+iy') = xx' - yy' + i (xy' +x'y)
-      Complex mult(Complex a, Complex b) {
-        Complex c;
-        c.re = a.re * b.re - a.im * b.im;
-        c.im = a.re * b.im + a.im * b.re;
-        return c;
-      }
-      
-      // -(x+iy) = -x + i*(-y)
-      Complex unary_minus(Complex a) {
-        Complex c;
-        c.re = -a.re;
-        c.im = -a.im;
-        return c;
-      }
-      
-      bool equal(Complex a, Complex b) { return (a.re == b.re) && (a.im == b.im); }
-      
-      // (x+iy) / (x'+iy') = (x+iy) * (x'-iy') / (x'^2 - y'^2)
-      // = (xx' + yy') / (x'^2 - y'^2) + i * (-xy' + x'y) / (x'^2 - y'^2)
-      Complex div(Complex a, Complex b) {
-        Complex c;
-        const double norm = (b.re * b.re + b.im * b.im);
-        c.re = (a.re * b.re + a.im * b.im) / norm;
-        c.im = (-a.re * b.im + a.im * b.re) / norm;
-        return c;
-      }
-      
-      // 1/ (x+iy) = (x-iy) / (x^2 - y^2)
-      Complex inverse(Complex a) {
-        Complex c;
-        const double norm = (a.re * a.re + a.im * a.im);
-        c.re = a.re / norm;
-        c.im = -a.im / norm;
-        return c;
-      }
-      
-      void print(Complex a) { printf("%f +i * %f\n", a.re, a.im); }
-      
-      double norm2(Complex a) { return (a.re * a.re + a.im * a.im); }
-      
-      Complex minus(Complex a, Complex b) { return add(a, unary_minus(b)); }
-      </code></pre>
-    Here is image.cpp:
-    <pre><code>
-      #include "image.hpp"
-      
-      #include <cmath>
-      #include <cstdio>
-      
-      #include "complex.hpp"
-      #include "poly.hpp"
-      
-      Image::Image(int width, int height) : width(width), height(height) {
-        data = (int *)malloc(width * height * 3 * sizeof(int));
-      }
-      
-      Image::~Image() { free(data); }
-      
-      void Image::update_pixel(int x, int y, int r, int g, int b) {
-        int offset = y * width * 3 + x * 3;
-        data[offset + 0] = r;
-        data[offset + 1] = g;
-        data[offset + 2] = b;
-      }
-      
-      void Image::write(const char *filename) {
-        FILE *fp = fopen(filename, "w");
-        if (!fp) exit(-1);
-      
-        const char *comment = "# file created by Image class";
-      
-        fprintf(fp, "P3\n %s\n %d\n %d\n 255\n", comment, width, height);
-      
-        for (int y = 0; y < height; ++y) {
-          for (int x = 0; x < width; ++x) {
-            int offset = y * width * 3 + x * 3;
-            fprintf(fp, "%d %d %d ", data[offset + 0], data[offset + 1],
-                    data[offset + 2]);
-          }
-          fprintf(fp, "\n");
-        }
-      
-        fclose(fp);
-      }
-      
-      void Image::smooth() {
-        const int field_size = 5;
-        const int half_field_size = field_size / 2;
-      
-        int *smoothed_data = (int *)malloc(width * height * 3 * sizeof(int));
-      
-        for (int y = 0; y < height; ++y) {
-          for (int x = 0; x < width; ++x) {
-            int sum_r = 0;
-            int sum_g = 0;
-            int sum_b = 0;
-            int count = 0;
-      
-            for (int i = (y - half_field_size >= 0 ? y - half_field_size : 0);
-                 i <= (y + half_field_size <= height - 1 ? y + half_field_size
-                                                         : height - 1);
-                 ++i) {
-              for (int j = (x - half_field_size >= 0 ? x - half_field_size : 0);
-                   j <= (x + half_field_size <= width - 1 ? x + half_field_size
-                                                          : width - 1);
-                   ++j) {
-                int offset = i * width * 3 + j * 3;
-                sum_r += data[offset + 0];
-                sum_g += data[offset + 1];
-                sum_b += data[offset + 2];
-                count++;
-              }
-            }
-      
-            int offset = y * width * 3 + x * 3;
-            smoothed_data[offset + 0] = sum_r / count;
-            smoothed_data[offset + 1] = sum_g / count;
-            smoothed_data[offset + 2] = sum_b / count;
-          }
-        }
-      
-        free(data);
-        data = smoothed_data;
-      }
-      </code></pre>
-    Here is imageMain.cpp:
-    <pre><code>
-      // Copyright 2023, AFL
-      
-      #include "complex.hpp"
-      #include "image.hpp"
-      #include "newton_fractal.hpp"
-      #include "poly.hpp"
-      
-      int main() {
-        int max_iterations = 100;
-        // int max_iterations = 50;
-        double precision = 1e-3;
-      
-        double x_start = -3.0;
-        double x_end = 3.0;
-        double x_step = 0.01;
-        double y_start = -3.0;
-        double y_end = 3.0;
-        double y_step = 0.01;
-      
-        int size_x = (x_end - x_start) / x_step;
-        int size_y = (y_end - y_start) / y_step;
-      
-        NewtonFractal fractal(x_start, x_step, x_end, y_start, y_step, y_end,
-                              max_iterations, precision);
-        Image img = fractal.calculate();
-        img.smooth();
-        img.write("newton_fractal.ppm");
-      
-        return 0;
-      }
-      </code></pre>
-    Here is imageTest.cpp:
-    <pre><code>
-      #include "gtest/gtest.h"
-      #include "image.hpp"
-      
-      
-      TEST(ImageTest, UpdatePixel) {
-        Image image(2, 2);
-      
-        // Test updating a pixel
-        image.update_pixel(0, 0, 255, 0, 0);
-        EXPECT_EQ(image.data[0], 255);
-        EXPECT_EQ(image.data[1], 0);
-        EXPECT_EQ(image.data[2], 0);
-      
-        // Test updating another pixel
-        image.update_pixel(1, 1, 0, 255, 0);
-        EXPECT_EQ(image.data[12], 0);
-        EXPECT_EQ(image.data[13], 255);
-        EXPECT_EQ(image.data[14], 0);
-      
-        // Test that other pixels are not affected
-        EXPECT_EQ(image.data[6], 0);
-        EXPECT_EQ(image.data[7], 0);
-        EXPECT_EQ(image.data[8], 0);
-      }</code></pre>
-    Here is newton.cpp:
-    <pre><code>
-      #include "newton.hpp"
-      #include <cmath>
-      #include <cstdio>
-      
-      #include "poly.hpp"
-      
-      Complex next_value(Complex z) {
-        Polynom p;
-        Complex x = div(p.poly(z), p.derived_poly(z));
-        return minus(z, x);
-      }
-      
-      // We use the squared norm instead of taking the square root.
-      // Therefore, we square the precision.
-      int classify_root(Complex a, double precision) {
-        const Complex z1 = {1, 0};
-        const Complex z2 = {-.5, sqrt(3) / 2.};
-        const Complex z3 = {-.5, -sqrt(3) / 2.};
-      
-        if (norm2(minus(a, z1)) < precision * precision) return 1;
-        if (norm2(minus(a, z2)) < precision * precision) return 2;
-        if (norm2(minus(a, z3)) < precision * precision) return 3;
-        return 0;
-      }
-      
-      Solution converges_to(Complex z, double precision, int max_iterations) {
-        bool finished = false;
-        int root = 0, i;
-      
-        for (i = 0; i < max_iterations && !finished; ++i, z = next_value(z)) {
-          root = classify_root(z, precision);
-          finished = (root != 0);
-        }
-      
-        return {root, i};
-      }
-      </code></pre>
-    Here is newton_fractal.cpp:
-    <pre><code>
-      #include "newton_fractal.hpp"
-      
-      #include "complex.hpp"
-      #include "image.hpp"
-      #include "newton.hpp"
-      #include "poly.hpp"
-      
-      NewtonFractal::NewtonFractal(double x_start, double x_step, double x_end,
-                                   double y_start, double y_step, double y_end,
-                                   int max_iterations, double precision)
-          : x_start(x_start),
-            x_step(x_step),
-            x_end(x_end),
-            y_start(y_start),
-            y_step(y_step),
-            y_end(y_end),
-            max_iterations(max_iterations),
-            precision(precision) {}
-      
-      Image NewtonFractal::calculate() {
-        const int x_size = (x_end - x_start) / x_step;
-        const int y_size = (y_end - y_start) / y_step;
-      
-        Image image(x_size, y_size);
-      
-        for (int i = 0; i < y_size; ++i) {
-          for (int j = 0; j < x_size; ++j) {
-            const Complex starting_point = {
-                x_start + j * x_step,
-                y_start + i * y_step,
-            };
-      
-            Solution sol = converges_to(starting_point, precision, max_iterations);
-            int color =
-                static_cast<int>(((double)max_iterations - sol.number_of_iterations) /
-                                 (double)max_iterations * (double)255);
-            int r = 0;
-            int g = 0;
-            int b = 0;
-            switch (sol.sol_number) {
-              case 1:
-                r = color;
-                break;
-              case 2:
-                g = color;
-                break;
-              case 3:
-                b = color;
-                break;
-              default:
-                break;
-            }
-      
-            image.update_pixel(j, i, r, g, b);
-          }
-        }
-      
-        return image;
-      }
-      </code></pre>
-    Here is poly.cpp:
-    <pre><code>
-      #include "poly.hpp"
-      
-      #include "complex.hpp"
-      
-      Complex Polynom::poly(Complex z) {
-        Complex z3 = mult(mult(z, z), z);
-        Complex one = {1, 0};
-        return minus(z3, one);
-      }
-      
-      Complex Polynom::derived_poly(Complex z) {
-        Complex three = {3, 0};
-        Complex z2 = mult(z, z);
-        Complex z3 = mult(z2, three);
-        return z3;
-      }
-      </code></pre>
-    Here is complex.hpp:
-    <pre><code>
-      #ifndef COMPLEX_HPP
-      #define COMPLEX_HPP
-      
-      /// Represents a complex number (CN) with real (re) and imaginary (im) parts
-      struct Complex {
-        double re;
-        double im;
+<main>
+
+  Here is complex.cpp:
+<pre><code>
+#include <cstdio>
+
+#include "complex.hpp"
+
+// x+iy + (x'+iy') = (x+x') + i (y+y')
+Complex add(Complex a, Complex b) {
+  Complex c;
+  c.im = a.im + b.im;
+  c.re = a.re + b.re;
+  return c;
+}
+
+// (x+iy) * (x'+iy') = xx' - yy' + i (xy' +x'y)
+Complex mult(Complex a, Complex b) {
+  Complex c;
+  c.re = a.re * b.re - a.im * b.im;
+  c.im = a.re * b.im + a.im * b.re;
+  return c;
+}
+
+// -(x+iy) = -x + i*(-y)
+Complex unary_minus(Complex a) {
+  Complex c;
+  c.re = -a.re;
+  c.im = -a.im;
+  return c;
+}
+
+bool equal(Complex a, Complex b) { return (a.re == b.re) && (a.im == b.im); }
+
+// (x+iy) / (x'+iy') = (x+iy) * (x'-iy') / (x'^2 - y'^2)
+// = (xx' + yy') / (x'^2 - y'^2) + i * (-xy' + x'y) / (x'^2 - y'^2)
+Complex div(Complex a, Complex b) {
+  Complex c;
+  const double norm = (b.re * b.re + b.im * b.im);
+  c.re = (a.re * b.re + a.im * b.im) / norm;
+  c.im = (-a.re * b.im + a.im * b.re) / norm;
+  return c;
+}
+
+// 1/ (x+iy) = (x-iy) / (x^2 - y^2)
+Complex inverse(Complex a) {
+  Complex c;
+  const double norm = (a.re * a.re + a.im * a.im);
+  c.re = a.re / norm;
+  c.im = -a.im / norm;
+  return c;
+}
+
+void print(Complex a) { printf("%f +i * %f\n", a.re, a.im); }
+
+double Complex::norm2() { return (this->re * this->re + this->im * this->im); }
+
+Complex minus(Complex a, Complex b) { return add(a, unary_minus(b)); }
+
+// namespace Complex</code></pre>
+Here is complexTest.cpp:
+<pre><code>
+#include "complex.hpp"
+#include <gtest/gtest.h>
+
+#define ASSERT_COMPLEX_EQ(a, b)                                                \
+  {                                                                            \
+    const Complex mya = (a);                                          \
+    const Complex myb = (b);                                          \
+    ASSERT_DOUBLE_EQ(mya.re, myb.re);                                          \
+    ASSERT_DOUBLE_EQ(mya.im, myb.im);                                          \
+  }
+
+TEST(complextest, add) {
+  const Complex a{2, 3};
+  const Complex b{3, 2};
+  const Complex c = add(a, b);
+
+  ASSERT_COMPLEX_EQ(a, a);
+  const Complex d{6, 5};
+  ASSERT_FALSE(equal(c, d));
+  const Complex e{5, 5};
+  ASSERT_COMPLEX_EQ(c, e);
+  ASSERT_COMPLEX_EQ(add(c, c), add(e, e));
+}
+
+TEST(complextest, mult) {
+  const Complex a{2, 4};
+  const Complex two{2, 0};
+  const Complex one{1, 0};
+
+  ASSERT_COMPLEX_EQ(mult(a, one), a);
+  ASSERT_COMPLEX_EQ(mult(a, two), add(a, a));
+  ASSERT_COMPLEX_EQ(mult(a, inverse(a)), one);
+}
+
+TEST(complextest, div) {
+  const Complex a{2, 4};
+  const Complex two{2, 0};
+  const Complex one{1, 0};
+
+  ASSERT_COMPLEX_EQ(div(a, one), a);
+  ASSERT_COMPLEX_EQ(a, div(add(a, a), two));
+  ASSERT_COMPLEX_EQ(div(one, div(one, a)), a);
+}
+
+TEST(complextest, inverse) {
+  const Complex a{2, 4};
+  const Complex two{2, 0};
+  const Complex one{1, 0};
+
+  ASSERT_COMPLEX_EQ(inverse(one), one);
+  ASSERT_COMPLEX_EQ(one, mult(a, inverse(a)));
+  ASSERT_COMPLEX_EQ(inverse(inverse(a)), a);
+}
+TEST(complextest, multdiv) {
+  {
+    Complex a{0, 1};
+    Complex b{0, 2};
+    Complex d = div(a, b);
+    Complex e = inverse(b);
+    Complex f = mult(a, e);
+    ASSERT_COMPLEX_EQ(d, f);
+  }
+
+  {
+    Complex a{0, 1};
+    Complex b = inverse(a);
+    Complex c = mult(a, b);
+    Complex d{1, 0};
+    ASSERT_COMPLEX_EQ(c, d);
+  }
+}
+
+int main() {
+  testing::InitGoogleTest();
+  return RUN_ALL_TESTS();
+}
+</code></pre>
+Here is image.cpp:
+<pre><code>
+#include <algorithm>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <stdio.h>
+
+#include "image.hpp"
+#include "newton.hpp"
+
+unsigned Image::find_max() const {
+  int curr_max = 0;
+  for (int y = 0; y < y_max; ++y) {
+    for (int x = 0; x < x_max; ++x) {
+      curr_max = std::max(curr_max, image[y * x_max * 3 + x * 3 + 0]);
+      curr_max = std::max(curr_max, image[y * x_max * 3 + x * 3 + 1]);
+      curr_max = std::max(curr_max, image[y * x_max * 3 + x * 3 + 2]);
+    }
+  }
+  return curr_max;
+}
+
+void Image::print_image(const char *filename) const {
+  FILE *fp = fopen(filename, "w");
+
+  const char *comment = "# file created by Mathias Fleury";
+
+  unsigned int curr_max = find_max();
+  const int max_bound = 65535;
+
+  const char *format = "P3";
+  fprintf(fp, "%s\n %s\n %d %d\n %d\n", format, comment, x_max, y_max,
+          max_bound);
+
+  for (int y = 0; y < y_max; ++y) {
+    for (int x = 0; x < x_max; ++x) {
+      const int r = image[y * x_max * 3 + x * 3 + 0] * max_bound / curr_max;
+      const int g = image[y * x_max * 3 + x * 3 + 1] * max_bound / curr_max;
+      const int b = image[y * x_max * 3 + x * 3 + 2] * max_bound / curr_max;
+      fprintf(fp, "%d %d %d ", r, g, b);
+    }
+    fprintf(fp, "\n");
+  }
+
+  fclose(fp);
+}
+
+// setting the pixel and resizing if needed.
+void Image::set_pixel(int x, int y, int r, int g, int b) {
+  image[y * x_max * 3 + x * 3 + 0] = r;
+  image[y * x_max * 3 + x * 3 + 1] = g;
+  image[y * x_max * 3 + x * 3 + 2] = b;
+}
+
+// Calculate the average of the neightboling offset.  To be safe, we do not
+// assume that we have at least one cell (e.g., if the given point (x,y) is
+// outside of the picture.
+unsigned Image::average(int x, int y, int offset) {
+  assert(offset < 3);
+  int cells = 0;
+  int number_of_cells = 0;
+  const int size_per_side = 10;
+  for (int i = x - size_per_side; i <= x + size_per_side; ++i) {
+    if (i < 0 || i >= x_max)
+      continue;
+    for (int j = y - size_per_side; j <= y + size_per_side; ++j) {
+      if (j < 0 || j >= y_max)
+        continue;
+      ++number_of_cells;
+      cells += image[j * x_max * 3 + i * 3 + offset];
+    }
+  }
+  return number_of_cells ? cells / number_of_cells : 0;
+}
+
+void Image::smoothing() {
+  int *new_image = (int *)malloc(x_max * y_max * 3 * sizeof(int));
+
+  for (int i = 0; i < x_max; ++i) {
+    for (int j = 0; j < y_max; ++j) {
+      for (int col = 0; col < 3; ++col)
+        new_image[j * x_max * 3 + i * 3 + col] = average(i, j, col);
+    }
+  }
+
+  free(image);
+  image = new_image;
+}</code></pre>
+Here is imageMain.cpp:
+<pre><code>
+#include <complex>
+#include <iostream>
+
+#include "complex.hpp"
+#include "image.hpp"
+#include "newton_fractal.hpp"
+
+int main() {
+  // NB: it is important to change both values at the same time if you increase
+  // the number of iterations make the precision close to zero. Remember than
+  // Newton's method converges _fast_.
+  const int max_iterations = 30;
+  const double precision = 0.0001;
+
+  const double x_start = -2.5;
+  const double x_end = 2.5;
+  const double x_step = 0.001;
+  const double y_start = -5;
+  const double y_end = 5;
+  const double y_step = 0.001;
+
+  NewtonFractal frac(x_start, x_step, x_end, y_start, y_step, y_end,
+                     max_iterations, precision);
+  Image img = frac.calculate();
+  img.smoothing();
+  img.print_image("newton.ppm");
+  return 0;
+}</code></pre>
+Here is newton.cpp:
+<pre><code>
+#include <cstdio>
+
+#include "complex.hpp"
+#include "newton.hpp"
+#include "poly.hpp"
+
+Complex next_value(Complex z) {
+  Complex x = div(Polynom::poly(z), Polynom::derived_poly(z));
+  return minus(z, x);
+}
+
+Solution converges_to(Complex z, double precision, int max_iterations) {
+  bool finished = equal(z, {0, 0});
+  int root = 0, i;
+
+  for (i = 0; i < max_iterations && !finished; ++i, z = next_value(z)) {
+    root = Polynom::classify_root(z, precision);
+    finished = (root != 0);
+  }
+
+  return {root, i};
+}
+</code></pre>
+Here is newton_fractal.cpp:
+<pre><code>
+#include "newton_fractal.hpp"
+#include "image.hpp"
+#include "newton.hpp"
+#include <cstdio>
+#include <cstdlib>
+
+Image NewtonFractal::calculate() {
+  const int x_size = (x_end - x_start) / x_step;
+  const int y_size = (y_end - y_start) / y_step;
+  Image img(x_size, y_size);
+
+  for (int i = 0; i < y_size; ++i) {
+    for (int j = 0; j < x_size; ++j) {
+      const Complex starting_point = {
+          x_start + j * x_step,
+          y_start + i * y_step,
       };
-      
-      /// Check if two CNs are equal
-      bool equal(Complex a, Complex b);
-      
-      /// Multiply two CNs
-      Complex mult(Complex a, Complex b);
-      
-      /// Divide two CNs
-      Complex div(Complex a, Complex b);
-      
-      /// Add two CNs
-      Complex add(Complex a, Complex b);
-      
-      // -z
-      Complex unary_minus(Complex);
-      
-      /// Calculate the inverse of a CN. The argument should not be zero.
-      Complex inverse(Complex);
-      
-      /// Print a CN with a line break
-      void print(Complex);
-      
-      // square absolute value
-      double norm2(Complex);
-      
-      // Subtract two CNs
-      Complex minus(Complex, Complex);
-      
-      #endif  // COMPLEX_HPP</code></pre>
-    Here is image.hpp:
-    <pre><code>
-      #ifndef IMAGE_HPP
-      #define IMAGE_HPP
-      
-      class Image {
-       public:
-        int width;
-        int height;
-        int *data;
-      
-        /// Constructor that takes the width and height of the image as arguments
-        Image(int width, int height);
-      
-        /// Destructor that frees the memory allocated for the image data
-        ~Image();
-      
-        /// Updates the RGB color values of a pixel at the given coordinates
-        void update_pixel(int x, int y, int r, int g, int b);
-      
-        /// Writes the image data to a PPM file with the given filename
-        void write(const char *filename);
-      
-        /// Applies a smoothing filter to the image
-        void smooth();
-      };
-      
-      #endif  // IMAGE_HPP
-      </code></pre>
-    Here is newton.hpp:
-    <pre><code>
-      #ifndef NEWTON_HPP
-      #define NEWTON_HPP
-      
-      #include "complex.hpp"
-      
-      /// Structure representing the result of applying Newton's procedure. It
-      /// contains to which solution the procedure converged to and the number of
-      /// iterations that was required.
-      struct Solution {
-        int sol_number;
-        int number_of_iterations;
-      };
-      ///  classify_root (Complex a, double precision)
-      int classify_root(Complex a, double precision);
-      
-      /// Newton procedure to find root starting at z, until the precision is reached
-      /// or we run of iterals
-      Solution converges_to(Complex z, double precision, int max_iterations);
-      
-      #endif  // NEWTON_HPP</code></pre>
-    Here is newton_fractal.hpp:
-    <pre><code>
-      #ifndef NEWTONFRACTAL_HPP
-      #define NEWTONFRACTAL_HPP
-      
-      #include "complex.hpp"
-      #include "image.hpp"
-      #include "newton_fractal.hpp"
-      #include "newton.hpp"
-      #include "poly.hpp"
-      
-      class NewtonFractal {
-       public:
-        double x_start;
-        double x_step;
-        double x_end;
-        double y_start;
-        double y_step;
-        double y_end;
-        int max_iterations;
-        double precision;
-        // Constructor that takes the parameters for generating the Newton fractal as
-        // arguments
-        NewtonFractal(double x_start, double x_step, double x_end, double y_start,
-                      double y_step, double y_end, int max_iterations,
-                      double precision);
-      
-        // Generates the Newton fractal and returns an Image object containing the
-        // generated image
-        Image calculate();
-      };
-      
-      #endif  // NEWTONFRACTAL_HPP
-      </code></pre>
-    Here is poly.hpp:
-    <pre><code>
-      #ifndef POLYNOM_HPP
-      #define POLYNOM_HPP
-      
-      #include "complex.hpp"
-      
-      class Polynom {
-       public:
-        /// Calculates the value of the polynomial at a given complex number z
-        Complex poly(Complex z);
-      
-        /// Calculates the value of the derivative of the polynomial at a given
-        /// complex number z
-        Complex derived_poly(Complex z);
-      };
-      
-      #endif  // POLYNOM_HPP
-      </code></pre>
 
+      Solution sol = converges_to(starting_point, precision, max_iterations);
+      int color =
+          static_cast<int>(((double)max_iterations - sol.number_of_iterations) /
+                           (double)max_iterations * (double)255);
 
-    Here is Makefile:
-    <pre><code> 
-    CXX = g++
-    CXXFLAGS=--std=c++14 
-    HEADERS = $(wildcard *.hpp)
-    OBJECTS = $(addsuffix .o, $(basename $(filter-out imageTest.cpp, $(wildcard *.cpp)))) complex.o poly.o
+      int red = 0;
+      int green = 0;
+      int blue = 0;
+      switch (sol.sol_number) {
+      case 1:
+        red = color;
+        break;
+      case 2:
+        green = color;
+        break;
+      case 3:
+        blue = color;
+        break;
+      default:
+        break;
+      }
 
-    all: clean compile test run format
+      img.set_pixel(j, i, red, green, blue);
+    }
+  }
 
-    %.o: %.cpp $(HEADERS)
-      $(CXX) -c $< $(CXXFLAGS)
+  return img;
+}</code></pre>
+Here is poly.cpp:
+<pre><code>
+#include <cstdio>
+#include <math.h>
 
-    %Main: %Main.o %.o
-      $(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
+#include "poly.hpp"
 
-    compile: imageMain
+Complex Polynom::poly(Complex z) {
+  Complex z3 = mult(mult(z, z), z);
+  Complex one{1, 0};
+  return minus(z3, one);
+}
 
-    imageMain: imageMain.o complex.o poly.o newton.o image.o newton_fractal.o  
-      $(CXX) -o $@ $^ $(CXXFLAGS) -lgtest -lpthread
+Complex Polynom::derived_poly(Complex z) {
+  Complex three{3, 0};
+  Complex z2 = mult(z, z);
+  Complex z3 = mult(z2, three);
+  return z3;
+}
 
-    imageTest: imageTest.o image.o
-      $(CXX) -o $@ $^ $(CXXFLAGS) -lgtest -lpthread -lgtest_main
-      ./imageTest
+// We use the squared norm instead of taking the square root.
+int Polynom::classify_root(Complex a, double precision) {
+  const Complex z1{1, 0};
+  const Complex z2{-.5, sqrt(3) / 2.};
+  const Complex z3{-.5, -sqrt(3) / 2.};
 
-    test: imageTest
-      ./$<
+  if (minus(a, z1).norm2() < precision * precision)
+    return 1;
+  if (minus(a, z2).norm2() < precision * precision)
+    return 2;
+  if (minus(a, z3).norm2() < precision * precision)
+    return 3;
+  return 0;
+}
+</code></pre>
+Here is polyTest.cpp:
+<pre><code>
+#include <gtest/gtest.h>
+#include <math.h>
 
-    run: imageMain
-      ./$<
+#include "poly.hpp"
 
-    clean:
-      rm -f imageMain imageTest *.o *Main *.ppm 
+#define ASSERT_COMPLEX_EQ(a, b)                                                \
+  {                                                                            \
+    const Complex mya = (a);                                                   \
+    const Complex myb = (b);                                                   \
+    ASSERT_DOUBLE_EQ(mya.re, myb.re);                                          \
+    ASSERT_DOUBLE_EQ(mya.im, myb.im);                                          \
+  }
 
-    format:
-      clang-format -i *.cpp *.hpp
-    </code></pre>
-  </main>
+TEST(PolyTest, poly) {
+  const Complex zero = {0, 0};
+  const Complex z1 = {1, 0};
+  const Complex z2{-.5, sqrt(3) / 2.};
+  const Complex z3{-.5, -sqrt(3) / 2.};
+  ASSERT_COMPLEX_EQ(Polynom::poly(z1), zero);
+  ASSERT_TRUE(Polynom::poly(z2).norm2() < 0.00000000001);
+  ASSERT_TRUE(Polynom::poly(z3).norm2() < 0.00000000001);
+}
+
+TEST(PolyTest, derived_poly) {
+  const Complex zero = {0, 0};
+  const Complex z1 = {1, 0};
+  const Complex three = {3, 0};
+  ASSERT_COMPLEX_EQ(Polynom::derived_poly(z1), three);
+  ASSERT_COMPLEX_EQ(Polynom::derived_poly(zero), zero);
+}
+
+TEST(PolyTest, classify_root) {
+  const Complex z1{1, 0};
+  const Complex z2{-.5, sqrt(3) / 2.};
+  const Complex z3{-.5, -sqrt(3) / 2.};
+  const double precision = 0.00001;
+  const int r1 = Polynom::classify_root(z1, precision);
+  const int r2 = Polynom::classify_root(z2, precision);
+  const int r3 = Polynom::classify_root(z3, precision);
+  ASSERT_TRUE(r1 != r2);
+  ASSERT_TRUE(r1 != r3);
+  ASSERT_TRUE(r2 != r3);
+  const int r4 = Polynom::classify_root(add(z3, z3), precision);
+  ASSERT_TRUE(r4 == 0);
+}
+</code></pre>
+Here is complex.hpp:
+<pre><code>
+#pragma once
+
+// very simple modelisation of complex numbers with a real part and an imaginary
+// part. We put into a namespace to avoid issue with std::equal...
+struct Complex {
+  // public:
+  //  Complex(double real, double imaginary) : re (real), im (imaginary) {}
+  //  Complex(double real) : re (real), im (0) {}
+  //  Complex() : re (0), im (0) {}
+  //  square absolute value
+  double re;
+  double im;
+  double norm2();
+};
+
+/// check for equality of 2 complex numbers
+bool equal(Complex, Complex);
+
+/// multiply two complex numbers
+Complex mult(Complex, Complex);
+
+/// divides two complex numbers. The second should not be zero.
+Complex div(Complex, Complex);
+
+/// addition of two complex numbers
+Complex add(Complex, Complex);
+
+Complex unary_minus(Complex);
+
+/// inverse of complex numbers. The second should not be zero.
+Complex inverse(Complex);
+
+/// Prints a complex number with a line break
+void print(Complex);
+
+Complex minus(Complex, Complex);</code></pre>
+Here is image.hpp:
+<pre><code>
+#pragma once
+
+#include <cstdlib>
+
+// Very simple class to contain Image
+//
+// It supports setting a pixel directly and then some image specific
+// transformation (smoothing and writing to a PPM file)
+//
+// Internally it uses the malloc-approach from the last lecture instead of new
+// and delete.
+class Image {
+public:
+  explicit Image() : image(nullptr), x_max(0), y_max(0) {}
+  explicit Image(int x_max_, int y_max_) : x_max(x_max_), y_max(y_max_) {
+    image = (int *)malloc(x_max * y_max * 3 * sizeof(int));
+  }
+
+  ~Image() { free(image); }
+
+  // write a PPM image from the pixel matrix with the given size.
+  //
+  // It does not free the array representing the image.
+  void print_image(const char *) const;
+  // write the binary version of the PPM file
+  //
+  // It does not free the array representing the image.  Binary files are around
+  // one-third of the size.
+  void print_binary_image(const char *) const;
+
+  // destructive opteration: average the pixels over the entire picture.
+  void smoothing();
+
+  // set the pixel (x,y) with the color given by the (r,g,b) as RGB encoding
+  void set_pixel(int x, int y, int r, int g, int b);
+
+private:
+  /// array containing the image
+  int *image;
+  // max x of the image
+  int x_max;
+  // max y of the image
+  int y_max;
+
+  // returns the maximum of the image
+  unsigned find_max() const;
+
+  // average at pixel at color offset
+  unsigned average(int x, int y, int offset);
+
+  // resize the internal image to the new size
+  void resize(int, int);
+};</code></pre>
+Here is newton.hpp:
+<pre><code>
+#pragma once
+
+#include "complex.hpp"
+
+// Structure representing the result of applying Newton's procedure. It contains
+// to which solution the procedure converged to and the number of iterations
+// that was required.
+struct Solution {
+  int sol_number;
+  int number_of_iterations;
+};
+
+// Newton procedure to find root starting at z, until the precision is reached
+// or we run of iterals
+Solution converges_to(Complex z, double precision, int max_iterations);</code></pre>
+Here is newton_fractal.hpp:
+<pre><code>
+#pragma once
+
+#include "image.hpp"
+
+class NewtonFractal {
+public:
+  explicit NewtonFractal(double x_start_, double x_step_, double x_end_,
+                         double y_start_, double y_step_, double y_end_,
+                         int max_iterations_, double precision_)
+      : x_start(x_start_), x_step(x_step_), x_end(x_end_), y_start(y_start_),
+        y_step(y_step_), y_end(y_end_), max_iterations(max_iterations_),
+        precision(precision_) {}
+
+  Image calculate();
+
+private:
+  double x_start, x_step, x_end;
+  double y_start, y_step, y_end;
+  int max_iterations;
+  double precision;
+};</code></pre>
+Here is poly.hpp:
+<pre><code>
+#pragma once
+
+#include "complex.hpp"
+#include <gtest/gtest.h>
+
+// Encompasses all calculation related to a polynom.
+// We use static to avoid create a dummy object, but
+// creating the object would work too.
+class Polynom {
+public:
+  // p: z -> z^3 - 1
+  static Complex poly(Complex);
+  // p: z -> 3*z^2
+  static Complex derived_poly(Complex);
+
+  // returns the number of the root
+  static int classify_root(Complex a, double precision);
+
+  FRIEND_TEST(PolyTest, poly);
+  FRIEND_TEST(PolyTest, derived_poly);
+  FRIEND_TEST(PolyTest, classify_root);
+};</code></pre>
+
+</main>
 </body>
 
 </html>
