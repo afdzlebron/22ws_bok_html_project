@@ -385,83 +385,87 @@
 
                                                       #include "board.hpp"
 
-                                                      class Stack {
-                                                      public:
-                                                      Stack() : size(0), capacity(1), stack(nullptr) {}
+                                                      template <typename T> class Stack {
+                                                        public:
+                                                        Stack() : size(0), capacity(1), stack(nullptr) {}
 
-                                                      ~Stack() {
-                                                      delete[] stack;
-                                                      }
+                                                        ~Stack() { delete[] stack; }
 
-                                                      // push the element to the stack
-                                                      void push(const Board &pos);
+                                                        // push the element to the stack
+                                                        void push(const T &pos);
 
-                                                      // last element added
-                                                      Board top() const;
+                                                        // last element added
+                                                        T top() const;
 
-                                                      // deletes the last inserted element of the stack
-                                                      void pop();
+                                                        // deletes the last inserted element of the stack
+                                                        void pop();
 
-                                                      // checks if the stack is empty
-                                                      bool empty() const;
+                                                        // checks if the stack is empty
+                                                        bool empty() const;
 
-                                                      // resize to match the capacity if required
-                                                      void reserve(int n);
+                                                        // resize to match the capacity if required
+                                                        void reserve(int n);
 
-                                                      private:
-                                                      int size;
-                                                      int capacity;
-                                                      Board *stack;
+                                                        const T operator[](int n) const { return stack[n]; }
 
-                                                      FRIEND_TEST(StackTest, pushTest);
-                                                      };
-                                                      #endif
-                                                      ```
-                                                      End of stack.hpp.
-                                                      //___________________________________
-                                                      This is `stackTest.cpp`:
-                                                      ```
-                                                      #include <gtest /gtest.h>
+                                                        int number_of_elements() const { return size; }
 
-                                                        #include "board.hpp"
-                                                        #include "stack.hpp"
+                                                        private:
+                                                        int size;
+                                                        int capacity;
+                                                        T *stack;
 
-                                                        TEST(StackTest, pushTest) {
-                                                        const Board a(4);
-                                                        const Board b(5);
-                                                        Stack s;
+                                                        FRIEND_TEST(StackTest, pushTest);
+                                                        };
 
-                                                        ASSERT_TRUE(s.empty());
-                                                        s.push(a);
-                                                        assert(s.stack[0] == a);
+                                                        #endif
 
-                                                        ASSERT_FALSE(s.empty());
-                                                        s.push(b);
-
-                                                        assert(s.stack[0] == a);
-                                                        ASSERT_EQ(s.stack[0], a);
-                                                        ASSERT_EQ(s.stack[1], b);
-
-                                                        const Board c = s.top();
-                                                        ASSERT_EQ(b, c);
-                                                        s.pop();
-
-                                                        const Board d = s.top();
-                                                        ASSERT_EQ(d, a);
-                                                        s.pop();
-
-                                                        ASSERT_TRUE(s.empty());
-                                                        s.pop();
-                                                        ASSERT_TRUE(s.empty());
-                                                        }
-
-                                                        int main() {
-                                                        testing::InitGoogleTest();
-                                                        return RUN_ALL_TESTS();
-                                                        }
                                                         ```
-                                                        End of stackTest.cpp.
+                                                        End of stack.hpp.
                                                         //___________________________________
+                                                        This is `stackTest.cpp`:
+                                                        ```
+                                                        #include <gtest /gtest.h>
+
+                                                          #include "board.hpp"
+                                                          #include "stack.hpp"
+
+                                                          TEST(StackTest, pushTest) {
+                                                          const Board a(4);
+                                                          const Board b(5);
+                                                          Stack s;
+
+                                                          ASSERT_TRUE(s.empty());
+                                                          s.push(a);
+                                                          assert(s.stack[0] == a);
+
+                                                          ASSERT_FALSE(s.empty());
+                                                          s.push(b);
+
+                                                          assert(s.stack[0] == a);
+                                                          ASSERT_EQ(s.stack[0], a);
+                                                          ASSERT_EQ(s.stack[1], b);
+
+                                                          const Board c = s.top();
+                                                          ASSERT_EQ(b, c);
+                                                          s.pop();
+
+                                                          const Board d = s.top();
+                                                          ASSERT_EQ(d, a);
+                                                          s.pop();
+
+                                                          ASSERT_TRUE(s.empty());
+                                                          s.pop();
+                                                          ASSERT_TRUE(s.empty());
+                                                          }
+
+                                                          int main() {
+                                                          testing::InitGoogleTest();
+                                                          return RUN_ALL_TESTS();
+                                                          }
+                                                          ```
+                                                          End of stackTest.cpp.
+                                                          //___________________________________
 
 
   </main>
