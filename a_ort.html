@@ -2,1523 +2,1227 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Orienting System</title>
-    <!-- icon -->
-    <link rel="icon" href="./img/attent.ico" />
-    <!-- css -->
-    <link rel="stylesheet" type="text/css" href="css/style.css" />
-    <!-- Webfont -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="./fontawesome/css/all.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Orienting System</title>
+  <!-- icon -->
+  <link rel="icon" href="./img/attent.ico" />
+  <!-- css -->
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+  <!-- Webfont -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="./fontawesome/css/all.css" rel="stylesheet">
 
-    <!-- LOCAL -->
-    <!-- featherlight -->
-    <link href="http://cdn.rawgit.com/noelboss/featherlight/1.7.1/release/featherlight.min.css" type="text/css"
-        rel="stylesheet" />
-    <link href="http://cdn.rawgit.com/noelboss/featherlight/1.7.1/release/featherlight.gallery.min.css" type="text/css"
-        rel="stylesheet" />
+  <!-- LOCAL -->
+  <!-- featherlight -->
+  <link href="http://cdn.rawgit.com/noelboss/featherlight/1.7.1/release/featherlight.min.css" type="text/css"
+    rel="stylesheet" />
+  <link href="http://cdn.rawgit.com/noelboss/featherlight/1.7.1/release/featherlight.gallery.min.css" type="text/css"
+    rel="stylesheet" />
 
 </head>
 
 <body>
 
-    <header id="top">
-        <nav>
-            <a href="index.html">The Attention System (ATS)</a>
-            <a href="a_alr.html">Alerting</a>
-            <a href="#">Orienting</a>
-            <a href="a_exe.html">Executive</a>
-            <a href="a_ext.html">Extending the ATS-Framework</a>
-            <a href="a_lit.html">Literature</a>
-            <a href="a_wks.html" target="_blank">Attention Training Workshop</a>
-        </nav>
-        <h1><i class="fa fa-brain"></i> Orienting System</h1>
-    </header>
-    <main>
+  <header id="top">
+    <nav>
+      <a href="index.html">The Attention System (ATS)</a>
+      <a href="a_alr.html">Alerting</a>
+      <a href="#">Orienting</a>
+      <a href="a_exe.html">Executive</a>
+      <a href="a_ext.html">Extending the ATS-Framework</a>
+      <a href="a_lit.html">Literature</a>
+      <a href="a_wks.html" target="_blank">Attention Training Workshop</a>
+    </nav>
+    <h1><i class="fa fa-brain"></i> Orienting System</h1>
+  </header>
+  <main>
 
-      <h2>Here comes `blatt 06` (complex.cpp, complex.hpp, complexTest.cpp, image.cpp, image.hpp, imageMain.cpp, imageTest.cpp, newton.cpp, newton.hpp, newtonfractal.cpp, newtonfractal.hpp, poly.hpp, poly1.cpp, polyTest.cpp
-        ):</h2>
-      Here is complex.cpp:
-  <pre><code>
-  #include <cstdio>
-  
-  #include "complex.hpp"
-  
-  // x+iy + (x'+iy') = (x+x') + i (y+y')
-  Complex add(Complex a, Complex b) {
-    Complex c;
-    c.im = a.im + b.im;
-    c.re = a.re + b.re;
-    return c;
-  }
-  
-  // (x+iy) * (x'+iy') = xx' - yy' + i (xy' +x'y)
-  Complex Complex::operator *(Complex b) const {
-    Complex c;
-    c.re = this->re * b.re - this->im * b.im;
-    c.im = this->re * b.im + this->im * b.re;
-    return c;
-  }
-  
-  
-  // -(x+iy) = -x + i*(-y)
-  Complex unary_minus(Complex a) {
-    Complex c;
-    c.re = -a.re;
-    c.im = -a.im;
-    return c;
-  }
-  
-  bool equal(Complex a, Complex b) { return (a.re == b.re) && (a.im == b.im); }
-  
-  // (x+iy) / (x'+iy') = (x+iy) * (x'-iy') / (x'^2 - y'^2)
-  // = (xx' + yy') / (x'^2 - y'^2) + i * (-xy' + x'y) / (x'^2 - y'^2)
-  Complex div(Complex a, Complex b) {
-    Complex c;
-    const double norm = (b.re * b.re + b.im * b.im);
-    c.re = (a.re * b.re + a.im * b.im) / norm;
-    c.im = (-a.re * b.im + a.im * b.re) / norm;
-    return c;
-  }
-  
-  // 1/ (x+iy) = (x-iy) / (x^2 - y^2)
-  Complex inverse(Complex a) {
-    Complex c;
-    const double norm = (a.re * a.re + a.im * a.im);
-    c.re = a.re / norm;
-    c.im = -a.im / norm;
-    return c;
-  }
-  
-  void print(Complex a) { printf("%f +i * %f\n", a.re, a.im); }
-  
-  double Complex::norm2() { return (this->re * this->re + this->im * this->im); }
-  
-  Complex minus(Complex a, Complex b) { return add(a, unary_minus(b)); }
-  
-  // namespace Complex</code></pre>
-  Here is complexTest.cpp:
-  <pre><code>
-  #include "complex.hpp"
-  #include <gtest/gtest.h>
-  
-  #define ASSERT_COMPLEX_EQ(a, b)                                                \
-    {                                                                            \
-      const Complex mya = (a);                                          \
-      const Complex myb = (b);                                          \
-      ASSERT_DOUBLE_EQ(mya.re, myb.re);                                          \
-      ASSERT_DOUBLE_EQ(mya.im, myb.im);                                          \
-    }
-  
-  TEST(complextest, add) {
-    const Complex a(2,3);
-    const Complex b(3,2);
-    const Complex c = add(a, b);
-  
-    ASSERT_COMPLEX_EQ(a, a);
-    const Complex d(6,5);
-    ASSERT_FALSE(equal(c, d));
-    const Complex e(5,5);
-    ASSERT_COMPLEX_EQ(c, e);
-    ASSERT_COMPLEX_EQ(add(c, c), add(e, e));
-  }
-  
-  TEST(complextest, mult) {
-    const Complex a(2,4);
-    const Complex two(2);
-    const Complex one(1);
-  
-    ASSERT_COMPLEX_EQ(a * one, a);
-    ASSERT_COMPLEX_EQ(a * two, add(a, a));
-    ASSERT_COMPLEX_EQ(a * inverse(a), one);
-  }
-  
-  TEST(complextest, div) {
-    const Complex a(2,4);
-    const Complex two(2);
-    const Complex one(1);
-  
-    ASSERT_COMPLEX_EQ(div(a, one), a);
-    ASSERT_COMPLEX_EQ(a, div(add(a, a), two));
-    ASSERT_COMPLEX_EQ(div(one, div(one, a)), a);
-  }
-  
-  TEST(complextest, inverse) {
-    const Complex a(2,4);
-    const Complex two(2);
-    const Complex one(1);
-  
-    ASSERT_COMPLEX_EQ(inverse(one), one);
-    ASSERT_COMPLEX_EQ(one, a * inverse(a));
-    ASSERT_COMPLEX_EQ(inverse(inverse(a)), a);
-  }
-  TEST(complextest, multdiv) {
-    {
-      Complex a(0,1);
-      Complex b(0,2);
-      Complex d = div(a, b);
-      Complex e = inverse(b);
-      Complex f = a*e;
-      ASSERT_COMPLEX_EQ(d, f);
-    }
-  
-    {
-      Complex a(0,1);
-      Complex b = inverse(a);
-      Complex c = a*b;
-      Complex d(1);
-      ASSERT_COMPLEX_EQ(c, d);
-    }
-  }
-  
-  int main() {
-    testing::InitGoogleTest();
-    return RUN_ALL_TESTS();
-  }
-  </code></pre>
-  Here is image.cpp:
-  <pre><code>
-  #include <algorithm>
-  #include <cassert>
-  #include <cstdio>
-  #include <cstdlib>
-  #include <fstream>
-  #include <stdio.h>
-  
-  #include "image.hpp"
-  #include "newton.hpp"
-  
-  unsigned Image::find_max() const {
-    int curr_max = 0;
-    for (int y = 0; y < y_size; ++y) {
-      for (int x = 0; x < x_size; ++x) {
-        curr_max = std::max(curr_max, image[y * x_size * 3 + x * 3 + 0]);
-        curr_max = std::max(curr_max, image[y * x_size * 3 + x * 3 + 1]);
-        curr_max = std::max(curr_max, image[y * x_size * 3 + x * 3 + 2]);
-      }
-    }
-    return curr_max;
-  }
-  
-  void Image::print_binary_image(const char *filename) const {
-    std::ofstream fp(filename, std::ios_base::out | std::ios_base::binary);
-  
-    const char *comment = "# file created by Mathias Fleury\n";
-    unsigned int curr_max = find_max();
-    const int max_bound = 255;
-  
-    const char *format = "P6\n";
-    fp << format << comment << x_size << " " << y_size << "\n" << max_bound;
-  
-    for (int y = 0; y < y_size; ++y) {
-      for (int x = 0; x < x_size; ++x) {
-        const char r = image[y * x_size * 3 + x * 3 + 0] * max_bound / curr_max;
-        const char g = image[y * x_size * 3 + x * 3 + 1] * max_bound / curr_max;
-        const char b = image[y * x_size * 3 + x * 3 + 2] * max_bound / curr_max;
-        fp << r << g << b;
-      }
-    }
-    fp.close();
-  }
-  
-  void Image::print_image(const char *filename) const {
-    FILE *fp = fopen(filename, "w");
-  
-    const char *comment = "# file created by Mathias Fleury";
-  
-    unsigned int curr_max = find_max();
-    const int max_bound = 65535;
-  
-    const char *format = "P3";
-    fprintf(fp, "%s\n %s\n %d %d\n %d\n", format, comment, x_size, y_size,
-            max_bound);
-  
-    for (int y = 0; y < y_size; ++y) {
-      for (int x = 0; x < x_size; ++x) {
-        const int r = image[y * x_size * 3 + x * 3 + 0] * max_bound / curr_max;
-        const int g = image[y * x_size * 3 + x * 3 + 1] * max_bound / curr_max;
-        const int b = image[y * x_size * 3 + x * 3 + 2] * max_bound / curr_max;
-        fprintf(fp, "%d %d %d ", r, g, b);
-      }
-      fprintf(fp, "\n");
-    }
-  
-    fclose(fp);
-  }
-  
-  
-  void Image::reserve (int new_x_capacity, int new_y_capacity) {
-    
-    int old_x_capacity = std::max(x_capacity, new_x_capacity);
-    int old_y_capacity = std::max(y_capacity, new_y_capacity);
-    if (old_x_capacity == this->x_capacity && old_y_capacity == new_y_capacity)
-      return;
-    x_capacity = new_x_capacity;
-    y_capacity = new_y_capacity;
-    
-    assert (x_size <= x_capacity);
-    assert (y_size <= y_capacity);
-    int *old_image = image;
-    image = (int *)malloc(x_capacity * y_capacity * 3 * sizeof(int));
-  
-    for (int i = 0; i < x_size; ++i) {
-      for (int j = 0; j < y_size; ++j) {
-        for (int col = 0; col < 3; ++col)
-          image[j * x_size * 3 + i * 3 + col] =
-              old_image[j * x_size * 3 + i * 3 + col];
-      }
-    }
-    free(old_image);
-  }
-  
-  
-  // resize the underlying array, copies the old content to the new array and
-  // delete the old one.
-  void Image::resize(int x, int y) {
-    if (x < x_size && y < y_size)
-      return;
-  
-    int old_x_size = x_size;
-    int old_y_size = y_size;
-    while (x_capacity <= x)
-      x_capacity *= 2;
-    while (y_capacity <= y)
-      y_capacity *= 2;
-  
-    x_size = std::max(x + 1, old_x_size);
-    y_size = std::max(y + 1, old_y_size);
-  
-    assert (x_size <= x_capacity);
-    assert (y_size <= y_capacity);
-    int *old_image = image;
-    image = (int *)malloc(x_capacity * y_capacity * 3 * sizeof(int));
-  
-    for (int i = 0; i < old_x_size; ++i) {
-      for (int j = 0; j < old_y_size; ++j) {
-        for (int col = 0; col < 3; ++col)
-          image[j * x_size * 3 + i * 3 + col] =
-              old_image[j * old_x_size * 3 + i * 3 + col];
-      }
-    }
-    free(old_image);
-  }
-  
-  // setting the pixel and resizing if needed.
-  void Image::set_pixel(int x, int y, int r, int g, int b) {
-    if (x >= x_size || y >= y_size) {
-      resize(x, y);
-    }
-  
-    image[y * x_size * 3 + x * 3 + 0] = r;
-    image[y * x_size * 3 + x * 3 + 1] = g;
-    image[y * x_size * 3 + x * 3 + 2] = b;
-  }
-  
-  // Calculate the average of the neightboling offset.  To be safe, we do not
-  // assume that we have at least one cell (e.g., if the given point (x,y) is
-  // outside of the picture.
-  unsigned Image::average(int x, int y, int offset) const {
-    assert(offset < 3);
-    int cells = 0;
-    int number_of_cells = 0;
-    const int size_per_side = 10;
-    for (int i = x - size_per_side; i <= x + size_per_side; ++i) {
-      if (i < 0 || i >= x_size)
-        continue;
-      for (int j = y - size_per_side; j <= y + size_per_side; ++j) {
-        if (j < 0 || j >= y_size)
-          continue;
-        ++number_of_cells;
-        cells += image[j * x_size * 3 + i * 3 + offset];
-      }
-    }
-    return number_of_cells ? cells / number_of_cells : 0;
-  }
-  
-  void Image::smoothing() {
-    int *new_image = (int *)malloc(x_size * y_size * 3 * sizeof(int));
-  
-    for (int i = 0; i < x_size; ++i) {
-      for (int j = 0; j < y_size; ++j) {
-        for (int col = 0; col < 3; ++col)
-          new_image[j * x_size * 3 + i * 3 + col] = average(i, j, col);
-      }
-    }
-  
-    free(image);
-    image = new_image;
-  }</code></pre>
-  Here is imageMain.cpp:
-  <pre><code>
-  #include <complex>
-  #include <iostream>
-  
-  #include "complex.hpp"
-  #include "image.hpp"
-  #include "newtonfractal.hpp"
-  
-  void do_nothing(Image) {
-  }
-  
-  
-  int main() {
-    // NB: it is important to change both values at the same time if you increase
-    // the number of iterations make the precision close to zero. Remember than
-    // Newton's method converges _fast_.
-    const int max_iterations = 30;
-    const double precision = 0.0001;
-  
-    const double x_start = -2.5;
-    const double x_end = 2.5;
-    const double x_step = 0.01;
-    const double y_start = -5;
-    const double y_end = 5;
-    const double y_step = 0.01;
-  
-    NewtonFractal frac(x_start, x_step, x_end, y_start, y_step, y_end,
-                       max_iterations, precision);
-    Image img = frac.calculate();
-    img.smoothing();
-    do_nothing(img);
-    img.print_image("newton.ppm");
-  
-    return 0;
-  }</code></pre>
-  Here is imageTest.cpp:
-  <pre><code>
-  #include <gtest/gtest.h>
-  #include <math.h>
-  
-  #include "image.hpp"
-  
-  TEST(ImageTest, sizeTest) {
-    Image test;
-    ASSERT_EQ(test.x_size, 0);
-    ASSERT_EQ(test.x_capacity, 1);
-  
-    // (5, 0)
-    test.resize(5, 0);
-    ASSERT_EQ(test.x_size, 6);
-    ASSERT_EQ(test.x_capacity, 8);
-    test.set_pixel(1, 0, 1, 1, 1);
-  
-    // (9, 0)
-    test.resize(9, 0);
-    ASSERT_EQ(test.x_size, 10);
-    ASSERT_EQ(test.x_capacity, 16);
-    test.set_pixel(7, 0, 1, 1, 1);
-  
-    // (0, 0)
-    test.resize(0, 0);
-    ASSERT_EQ(test.x_size, 10);
-    ASSERT_EQ(test.x_capacity, 16);
-  
-    // (10, 0)
-    test.resize(10, 0);
-    ASSERT_EQ(test.x_size, 11);
-    ASSERT_EQ(test.x_capacity, 16);
-  
-    // (130, 0)
-    test.resize(130, 0);
-    ASSERT_EQ(test.x_size, 131);
-    ASSERT_EQ(test.x_capacity, 256);
-  
-    // Testing that pixels have not disappeared
-    ASSERT_EQ(test.image[0 * test.x_size * 3 + 1 * 3 + 0], 1);
-    ASSERT_EQ(test.image[0 * test.x_size * 3 + 7 * 3 + 0], 1);
-  }
-  
-  int main() {
-    testing::InitGoogleTest();
-    return RUN_ALL_TESTS();
-  }
-  </code></pre>
-  Here is newton.cpp:
-  <pre><code>
-  #include <cstdio>
-  
-  #include "complex.hpp"
-  #include "newton.hpp"
-  #include "poly.hpp"
-  
-  Complex next_value(Complex z) {
-    Complex x = div(Polynom::poly(z), Polynom::derived_poly(z));
-    return minus(z, x);
-  }
-  
-  Solution converges_to(Complex z, double precision, int max_iterations) {
-    bool finished = equal(z, Complex(0,0));
-    int root = 0, i;
-  
-    for (i = 0; i < max_iterations && !finished; ++i, z = next_value(z)) {
-      root = Polynom::classify_root(z, precision);
-      finished = (root != 0);
-    }
-  
-    return {.sol_number = root, .number_of_iterations = i};
-  }
-  </code></pre>
-  Here is newtonfractal.cpp:
-  <pre><code>
-  #include "newtonfractal.hpp"
-  #include "image.hpp"
-  #include "newton.hpp"
-  #include <cstdio>
-  #include <cstdlib>
-  
-  Image NewtonFractal::calculate() {
-    const int x_size = (x_end - x_start) / x_step;
-    const int y_size = (y_end - y_start) / y_step;
-    printf("%d", x_size);
-  
-    Image img (x_size, y_size);
-  
-    for (int i = 0; i < y_size; ++i) {
-      for (int j = 0; j < x_size; ++j) {
-        const Complex starting_point (x_start + j * x_step, y_start + i * y_step);
-  
-        Solution sol = converges_to(starting_point, precision, max_iterations);
-        int color =
-            static_cast<int>(((double)max_iterations - sol.number_of_iterations) /
-                             (double)max_iterations * (double)255);
-  
-        int red = 0;
-        int green = 0;
-        int blue = 0;
-        switch (sol.sol_number) {
-        case 1:
-          red = color;
-          break;
-        case 2:
-          green = color;
-          break;
-        case 3:
-          blue = color;
-          break;
-        default:
-          break;
-        }
-  
-        img.set_pixel(j, i, red, green, blue);
-      }
-    }
-  
-    return img;
-  }</code></pre>
-  Here is poly1.cpp:
-  <pre><code>
-  #include <cstdio>
-  #include <math.h>
-  
-  #include "poly.hpp"
-  
-  Complex Polynom::poly(Complex z) {
-    Complex z3 = z * z * z;
-    Complex one(1, 0);
-    return minus(z3, one);
-  }
-  
-  Complex Polynom::derived_poly(Complex z) {
-    Complex three(3);
-    Complex z2 = z * z;
-    Complex z3 = z2 * three;
-    return z3;
-  }
-  
-  // We use the squared norm instead of taking the square root.
-  int Polynom::classify_root(Complex a, double precision) {
-    const Complex z1(1,0);
-    const Complex z2(-.5, sqrt(3) / 2.);
-    const Complex z3(-.5, -sqrt(3) / 2.);
-  
-    if (minus(a, z1).norm2() < precision * precision)
-      return 1;
-    if (minus(a, z2).norm2() < precision * precision)
-      return 2;
-    if (minus(a, z3).norm2() < precision * precision)
-      return 3;
-    return 0;
-  }
-  </code></pre>
-  Here is polyTest.cpp:
-  <pre><code>
-  #include <gtest/gtest.h>
-  #include <math.h>
-  
-  #include "poly.hpp"
-  
-  
-  #define ASSERT_COMPLEX_EQ(a, b)                                                \
-    {                                                                            \
-      const Complex mya = (a);                                          \
-      const Complex myb = (b);                                          \
-      ASSERT_DOUBLE_EQ(mya.re, myb.re);                                          \
-      ASSERT_DOUBLE_EQ(mya.im, myb.im);                                          \
-    }
-  
-  
-  TEST(PolyTest, poly) {
-    const Complex zero (0);
-    const Complex z1 (1);
-    const Complex z2 (-.5, sqrt(3) / 2.);
-    const Complex z3 (-.5, -sqrt(3) / 2.);
-    ASSERT_COMPLEX_EQ (Polynom::poly(z1), zero);
-    ASSERT_TRUE (Polynom::poly(z2).norm2() < 0.00000000001);
-    ASSERT_TRUE (Polynom::poly(z3).norm2() < 0.00000000001);
-  }
-  
-  TEST(PolyTest, derived_poly) {
-    ASSERT_COMPLEX_EQ (Polynom::derived_poly(1), 3);
-    ASSERT_COMPLEX_EQ (Polynom::derived_poly(0), 0);
-  }
-  
-  TEST(PolyTest, classify_root) {
-    const Complex z1 (1);
-    const Complex z2 (-.5, sqrt(3) / 2.);
-    const Complex z3 (-.5, -sqrt(3) / 2.);
-    const double precision = 0.00001;
-    const int r1 = Polynom::classify_root(z1, precision);
-    const int r2 = Polynom::classify_root(z2, precision);
-    const int r3 = Polynom::classify_root(z3, precision);
-    ASSERT_TRUE(r1 != r2);
-    ASSERT_TRUE(r1 != r3);
-    ASSERT_TRUE(r2 != r3);
-    const int r4 = Polynom::classify_root(add(z3, z3), precision);
-    ASSERT_TRUE (r4 == 0);
-  }
-  
-  int main() {
-    testing::InitGoogleTest();
-    return RUN_ALL_TESTS();
-  }
-  </code></pre>
-  Here is complex.hpp:
-  <pre><code>
-  #pragma once
-  
-  
-    // very simple modelisation of complex numbers with a real part and an imaginary part. We put into
-    // a namespace to avoid issue with std::equal...
-  class Complex {
-    public:
-    Complex(double real, double imaginary) : re (real), im (imaginary) {}
-    Complex(double real) : re (real), im (0) {}
-    Complex() : re (0), im (0) {}
-    // square absolute value
-    double re;
-    double im;
-    double norm2 ();
-  
-    Complex operator*(Complex) const;
-  };
-  
-    /// check for equality of 2 complex numbers
-  bool equal (Complex, Complex);
-  
-    /// multiply two complex numbers
-  Complex mult (Complex, Complex);
-  
-    /// divides two complex numbers. The second should not be zero.
-  Complex div (Complex, Complex);
-  
-    /// addition of two complex numbers
-  Complex add (Complex, Complex);
-  
-  Complex unary_minus (Complex);
-  
-    /// inverse of complex numbers. The second should not be zero.
-  Complex inverse (Complex);
-  
-    /// Prints a complex number with a line break
-  void print (Complex);
-  
-  Complex minus (Complex, Complex);</code></pre>
-  Here is image.hpp:
-  <pre><code>
-  #pragma once
-  
-  #include <gtest/gtest.h>
-  
-  #include <cstdlib>
-  
-  // Very simple class to contain Image
-  //
-  // It supports setting a pixel directly and then some image specific
-  // transformation (smoothing and writing to a PPM file)
-  //
-  // Internally it uses the malloc-approach from the last lecture instead of new and delete.
-  class Image {
-  public:
-    explicit Image() : image (nullptr), x_size (0), x_capacity(1), y_size(0), y_capacity(1) {}
-  
-    explicit Image(int x_size_, int y_size_) : x_size (x_size_), x_capacity(x_size_),
-               y_size(y_size_), y_capacity(y_size_) {
-      image = (int*) malloc (x_size * y_size * 3 * sizeof(int));
-    }
-  
-    Image(Image & img) {
-      x_size = img.x_size;
-      y_size = img.y_size;
-      x_capacity = img.x_capacity;
-      y_capacity = img.y_capacity;
-      image = (int *)malloc(x_capacity * y_capacity * 3 * sizeof(int));
-  
-      for (int y = 0; y < y_size; ++y) {
-        for (int x = 0; x < x_size; ++x) {
-    image[y * x_size * 3 + x * 3 + 0] = img.image[y * x_size * 3 + x * 3 + 0];
-        }
-      }
-    }
-  
-    Image(Image && img) {
-      x_size = img.x_size;
-      y_size = img.y_size;
-      x_capacity = img.x_capacity;
-      y_capacity = img.y_capacity;
-      image = img.image;
-    }
-  
-    ~Image() {
-      free(image);
-    }
-  
-    // write a PPM image from the pixel matrix with the given size.
-    //
-    // It does not free the array representing the image.
-    void print_image (const char *) const;
-    // write the binary version of the PPM file
-    //
-    // It does not free the array representing the image.  Binary files are around one-third of the
-    // size.
-    void print_binary_image (const char *) const;
-  
-  
-    // destructive opteration: average the pixels over the entire picture.
-    void smoothing ();
-  
-    // set the pixel (x,y) with the color given by the (r,g,b) as RGB encoding
-    void set_pixel (int x, int y, int r, int g, int b);
-  
-  private:
-    /// array containing the image
-    int * image;
-    // max x of the image
-    int x_size, x_capacity;
-    // max y of the image
-    int y_size, y_capacity;
-  
-    // returns the maximum of the image
-    unsigned find_max() const;
-  
-    // average at pixel at color offset
-    unsigned average(int x, int y, int offset) const;
-  
-    // resize the internal image to the new size and sets the size large enough according to the
-    // policy (Aufgabe 2 -> tight fit; Aufgabe 3 -> doubling the capacity)
-    void resize (int, int);
-  
-    // reserve enough memory
-    void reserve (int, int);
-  
-    FRIEND_TEST(ImageTest, sizeTest);
-  
-  };</code></pre>
-  Here is newton.hpp:
-  <pre><code>
-  #pragma once
-  
-  #include "complex.hpp"
-  
-  // Structure representing the result of applying Newton's procedure. It contains to which solution
-  // the procedure converged to and the number of iterations that was required.
-  struct Solution {
-    int sol_number;
-    int number_of_iterations;
-  };
-  
-  // Newton procedure to find root starting at z, until the precision is reached
-  // or we run of iterals
-  Solution converges_to (Complex z, double precision, int max_iterations);</code></pre>
-  Here is newtonfractal.hpp:
-  <pre><code>
-  #pragma once
-  
-  #include "image.hpp"
-  
-  class NewtonFractal {
-  public:
-    explicit NewtonFractal (double x_start_, double x_step_, double x_end_,
-          double y_start_, double y_step_, double y_end_,
-          int max_iterations_, double precision_) :
-      x_start (x_start_), x_step (x_step_), x_end (x_end_),
-      y_start (y_start_), y_step (y_step_), y_end (y_end_),
-      max_iterations(max_iterations_), precision (precision_) {
-  
-    }
-  
-    Image calculate ();
-  
-  private:
-    double x_start, x_step, x_end;
-    double y_start, y_step, y_end;
-    int max_iterations;
-    double precision;
-  };</code></pre>
-  Here is poly.hpp:
-  <pre><code>
-  #pragma once
-  
-  #include "complex.hpp"
-  #include <gtest/gtest.h>
-  
-  
-  // Encompasses all calculation related to a polynom.
-  // We use static to avoid create a dummy object, but
-  // creating the object would work too.
-  class Polynom {
-  public:
-    // p: z -> z^3 - 1
-    static Complex poly (Complex);
-    // p: z -> 3*z^2
-    static Complex derived_poly (Complex);
-  
-    // returns the number of the root
-    static int classify_root (Complex a, double precision);
-  
-    FRIEND_TEST(PolyTest, poly);
-    FRIEND_TEST(PolyTest, derived_poly);
-    FRIEND_TEST(PolyTest, classify_root);
-  };</code></pre>
-  
-      <h2>End of `blatt 06`.</h2>
-  
-  
-      <h2>Here comes skeleton_07 = {bdd.cpp, bdd.hpp, bddMain.cpp, bddTest.cpp, board.cpp, board.hpp, boardTest.cpp,
-        node.cpp, node.hpp, nqueens.cpp, nqueens.hpp, nqueensMain.cpp, stack.cpp, stack.hpp, stackTest.cpp
-        }: </h2>
-        <h3>Here is `bild01.png`</h3>
-        <a href="./img/bild01.png"></a><img src="./img/bild01.png" width="300" alt="brain">
-        <br>
-      Here is bdd.cpp:
-      <pre><code>
-  #include <fstream>
-  #include <vector>
-  
-  #include "bdd.hpp"
-  
-  Node *BDD::import_node(const Board &b) {
-    /*TODO: Übungsblatt 8, Aufgabe 4*/
-    assert(false);
-    return nullptr;
-  }
-  
-  void BDD::connect(Node *parent, Node *children, bool if_true) {
-    /*TODO: Übungsblatt 8, Aufgabe 4*/
-    assert(false);
-  }
-  
-  void BDD::connect_true(Node *parent, bool if_true) {
-    /*TODO: Übungsblatt 8, Aufgabe 4*/
-    assert(false);
-  }
-  
-  void BDD::connect_false(Node *parent, bool if_true) {
-    /*TODO: Übungsblatt 8, Aufgabe 4*/
-    assert(false);
-  }
-  
-  std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
-    /*TODO: Übungsblatt 8, Aufgabe 4*/
-    assert(false);
-    return stream;
-  }
-  
-  void BDD::write_dot_file(std::string file_path) const {
-    std::ofstream myfile;
-    myfile.open(file_path);
-    if (myfile.is_open()) {
-      myfile << *this;
-      myfile.close();
-    }
-  }
-  
-  int BDD::count_true_path() const {
-    /*TODO: Übungsblatt 9, Aufgabe 7*/
-    assert(false);
-    return 0;
-  }
-  </code></pre>
-      Here is bddMain.cpp:
-      <pre><code>
-  #include "bdd.hpp"
-  
-  int main() { BDD bdd; }</code></pre>
-      Here is bddTest.cpp:
-      <pre><code>
-  #include <fstream>
-  #include <gtest/gtest.h>
-  #include <iostream>
-  
-  #include "bdd.hpp"
-  
-  // In this test, we construct a simple BDD with boards of length 4 and we write
-  // the corresponding graph to a file.
-  TEST(BDDTest, basicTest) {
-    Board a(4);
-    Board b(4);
-    BDD bdd;
-  
-    Node *a1 = bdd.import_node(a);
-  
-    ASSERT_TRUE(a.has_next(true));
-    a.next(true);
-    Node *a2 = bdd.import_node(a);
-  
-    ASSERT_TRUE(b.has_next(false));
-    b.next(false);
-  
-    Node *b2 = bdd.import_node(b);
-    bdd.connect(a1, a2, true);
-    bdd.connect(a1, b2, false);
-    ASSERT_EQ(a1->if_true, a2);
-    ASSERT_EQ(a1->if_false, b2);
-    ASSERT_EQ(bdd.root, a1);
-  
-    bdd.connect_true(a2, true);
-    bdd.connect_true(a2, false);
-  
-    bdd.connect_true(b2, true);
-    bdd.connect_false(b2, false);
-  
-    ASSERT_EQ(bdd.count_true_path(), 3);
-  
-    std::ofstream myfile;
-    myfile.open("small_test_bdd.txt");
-    if (myfile.is_open()) {
-      myfile << bdd;
-      myfile.close();
-    }
-  }
-  
-  int main() {
-    testing::InitGoogleTest();
-    return RUN_ALL_TESTS();
-  }
-  </code></pre>
-      Here is board.cpp:
-      <pre><code>
-        #include "board.hpp"
 
-        #include <assert.h>
-        
-        #include <string>
-        
-        bool Board::has_next(bool taken) const {
-          int position_to_change = -1;
-          for (int i = 0; i < size; ++i) {
-            if (board[i] <= 0) {
-              position_to_change = i;
-              break;
-            }
-          }
-        
-          if (position_to_change == -1) return false;
-        
-          const int value = board[position_to_change];
-        
-          if (!taken && size == -value + 1) return false;
-        
-          return true;
-        }
-        
-        void Board::next(bool taken) {
-          int position_to_change = -1;
-          for (int i = 0; i < size; ++i) {
-            if (board[i] <= 0) {
-              position_to_change = i;
-              break;
-            }
-          }
-        
-          assert(position_to_change != -1);
-        
-          const int value = board[position_to_change];
-        
-          assert(taken || size != value - 1);
-        
-          if (taken)
-            board[position_to_change] = -value + 1;
-          else
-            board[position_to_change] -= 1;
-        }
-        
-        std::ostream &operator<<(std::ostream &stream, const Board &board) {
-          stream << "\n";
-          for (int line = 0; line < board.size; ++line) {
-            stream << "|";
-            for (int row = 0; row < board.size; ++row) {
-              if (board.board[row] - 1 == line)
-                stream << "d";
-              else if (board.board[row] < 0 && line <= -board.board[row] - 1)
-                stream << ".";
-              else
-                stream << " ";
-              stream << "|";
-            }
-            stream << "\n";
-          }
-          return stream;
-        }
-        
-        // Checks if a position is valid: two queens are (i) on the same row if they
-        // have the position and (ii) are on the same diagonal if the distance is the
-        // same as the row distance.
-        bool Board::is_valid() const {
-          for (int i = 0; i < size; ++i) {
-            if (board[i] > 0) {
-              for (int j = i + 1; j < size; ++j) {
-                if (board[j] > 0) {
-                  if (board[i] == board[j]) return false;
-                  if (abs(board[i] - board[j]) == abs(i - j)) return false;
-                }
-              }
-            }
-          }
-          return true;
-        }
-        
-        bool Board::is_full() const {
-          for (int i = 0; i < size; ++i) {
-            if (board[i] <= 0) return false;
-          }
-          return true;
-        
-  }</code></pre>
-      Here is boardTest.cpp:
-      <pre><code>
-        #include <gtest/gtest.h>
+    Here is bdd.cpp:
+    <pre><code>
+#include "bdd.hpp"
 
-        #include "board.hpp"
-        
-        TEST(BoardTest, nextTest) {
-          Board b(3);
-          b.board[0] = -1;
-        
-          ASSERT_TRUE(b.has_next(true));
-        
-          b.next(true);
-          ASSERT_EQ(b.board[0], 2);
-        
-          ASSERT_TRUE(b.has_next(false));
-          b.next(false);
-          ASSERT_EQ(b.board[0], 2);
-          ASSERT_EQ(b.board[1], -1);
-        
-          ASSERT_TRUE(b.has_next(false));
-          b.next(false);
-          ASSERT_EQ(b.board[0], 2);
-          ASSERT_EQ(b.board[1], -2);
-        
-          ASSERT_FALSE(b.has_next(false));
-        
-          ASSERT_TRUE(b.has_next(true));
-          b.next(true);
-          ASSERT_EQ(b.board[0], 2);
-          ASSERT_EQ(b.board[1], 3);
-          ASSERT_EQ(b.size, 3);
-        
-          ASSERT_TRUE(b.has_next(true));
-          b.next(true);
-          ASSERT_EQ(b.board[0], 2);
-          ASSERT_EQ(b.board[1], 3);
-          ASSERT_EQ(b.board[2], 1);
-          ASSERT_EQ(b.size, 3);
-        }
-        
-        TEST(BoardTest, stringTest) {
-          Board b(3);
-          b.board[0] = 3;
-          b.board[1] = 1;
-          b.board[2] = 2;
-        
-          std::stringstream b_position;
-          b_position << b;
-          ASSERT_EQ(b_position.str(), "| |d| |\n"
-                                      "| | |d|\n"
-                                      "|d| | |\n");
-          b.board[0] = -3;
-          b.board[1] = 1;
-          b.board[2] = 2;
-        
-          std::stringstream c_position;
-          c_position << b;
-          ASSERT_EQ(c_position.str(), "|.|d| |\n"
-                                      "|.| |d|\n"
-                                      "|.| | |\n");
-        }
-        
-        TEST(BoardTest, validTest) {
-          Board b(4);
-          b.board[0] = 3;
-          b.board[1] = 1;
-          b.board[2] = 4;
-          b.board[3] = 2;
-          ASSERT_TRUE(b.is_valid());
-        
-          b.board[3] = -2;
-          ASSERT_TRUE(b.is_valid());
-        
-          b.board[3] = 1;
-          ASSERT_FALSE(b.is_valid());
-        
-          b.board[0] = 1;
-          b.board[1] = -1;
-          b.board[2] = -4;
-          b.board[3] = 4;
-          ASSERT_FALSE(b.is_valid());
-        
-          b.board[0] = 4;
-          b.board[1] = 2;
-          b.board[2] = 0;
-          b.board[3] = 0;
-          ASSERT_TRUE(b.is_valid());
-        
-          b.board[0] = 4;
-          b.board[1] = 1;
-          b.board[2] = 0;
-          b.board[3] = 0;
-          ASSERT_TRUE(b.is_valid());
-        }
-        
-        int main() {
-          testing::InitGoogleTest();
-          return RUN_ALL_TESTS();
-        }
-        
-  </code></pre>
-      Here is node.cpp:
-      <pre><code>
-  #include "node.hpp"
-  
-  std::ostream &operator<<(std::ostream &stream, const Node &node) {
-    stream << node.configuration;
-    return stream;
-  }
-  </code></pre>
-      Here is nqueens.cpp:
-      <pre><code>
-  #include <fstream>
-  #include <stack>
-  
-  #include "nqueens.hpp"
-  
-  // connect Node parent to its child (direction true or false) and pushing the
-  // node to the stack if needed
-  void NQueens::check_and_add_child(Node *parent, bool direction,
-                                    std::stack<Node *> &stack) {
-    // NB: this is just a helper function I found useful to have, but
-    /*TODO: Übungsblatt 9, Aufgabe 6*/
+#include <vector>
+
+#include "stack.hpp"
+
+/* ÜB 10, Aufgabe 10*/
+Node *BDD::import_node(const Board &b, bool &already_exists) {
+  Board a = b;
+
+  const bool not_normalized = a.has_symmetries();
+  Node *n;
+
+  const bool ub10_aufgabe10_schon_implementiert = false;
+  if (ub10_aufgabe10_schon_implementiert && not_normalized) {
+    /*NEW ÜB 10, Aufgabe 10*/
+    /*TODO ÜB 10, Aufgabe 10*/
+    /*nicht vergessen ub10_aufgabe10_schon_implementiert zu löschen!*/
     assert(false);
+  } else {
+    already_exists = false;
+    n = new Node(fresh_id, a);
   }
-  
-  void NQueens::construct_bdd() {
-    /*TODO: Übungsblatt 9, Aufgabe 6*/
-    assert(false);
-  }</code></pre>
-      Here is nqueensMain.cpp:
-      <pre><code>
-  #include "nqueens.hpp"
-  
-  int main() {
-    NQueens queens(4);
-    std::cout << queens.count_solutions();
+
+  ++fresh_id;
+  // NEW ÜB10: adapted to std::set
+  nodes.insert(n);
+
+  if (!root) root = n;
+  return n;
+}
+
+void BDD::connect(Node *parent, Node *children, bool if_true) {
+  if (if_true)
+    parent->if_true = children;
+  else
+    parent->if_false = children;
+}
+
+void BDD::connect_true(Node *parent, bool if_true) {
+  if (if_true)
+    parent->if_true = true_node;
+  else
+    parent->if_false = true_node;
+}
+
+void BDD::connect_false(Node *parent, bool if_true) {
+  if (if_true)
+    parent->if_true = false_node;
+  else
+    parent->if_false = false_node;
+}
+
+int BDD::count_true_path() const {
+  /*ÜB9, Aufgabe 7*/
+  return 0;
+  Stack<Node *> queue;
+  int path = 0;
+
+  if (!root) return 0;
+
+  queue.push(root);
+
+  while (!queue.empty()) {
+    Node *b = queue.top();
+    queue.pop();
+    if (b == true_node) {
+      ++path;
+      continue;
+    }
+    if (b == false_node) continue;
+
+    queue.push(b->if_true);
+    queue.push(b->if_false);
   }
-  </code></pre>
-      Here is stack.cpp:
-      <pre><code>
-  #include "stack.hpp"
-  
-  void Stack::reserve(int n) {
-    /*TODO: Übungsblatt 7, Aufgabe 2*/
-    assert(false);
+
+  return path;
+}
+
+int BDD::count_fundamental_true_path() const {
+  std::vector<Node *> stack;
+  int count = 0;
+
+  if (root) {
+    stack.push_back(root);
   }
-  
-  void Stack::push(const Board &board) {
-    /*TODO: Übungsblatt 7, Aufgabe 2*/
-    assert(false);
+
+  while (!stack.empty()) {
+    Node *n = stack.back();
+    stack.pop_back();
+
+    if (n->to_delete) {
+      continue;
+    }
+
+    n->to_delete = true;
+
+    if (n == true_node) {
+      count++;
+    } else if (n != false_node) {
+      stack.push_back(n->if_true);
+      stack.push_back(n->if_false);
+    }
   }
-  
-  void Stack::pop() {
-    /*TODO: Übungsblatt 7, Aufgabe 2*/
-    assert(false);
+
+  for (Node *n : nodes) {
+    n->to_delete = false;
   }
-  
-  Board Stack::top() const {
-    /*TODO: Übungsblatt 7, Aufgabe 2*/
-    assert(false);
-    return Board(-1);
+
+  return count;
+}
+
+std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
+  std::vector<Node *> queue;
+  if (bdd.root) queue.push_back(bdd.root);
+  const std::string true_name("true");
+  const std::string false_name("false");
+
+  stream << "digraph BDD\n {";
+
+  for (const auto &node : bdd.nodes) {
+    assert(!node->to_delete);
+    stream << node->id << "[fontname=\"Comic Mono\",label= \"" << *node
+           << "\"]\n";
   }
-  
-  bool Stack::empty() const {
-    /*TODO: Übungsblatt 7, Aufgabe 2*/
-    assert(false);
+
+  for (const auto &b : bdd.nodes) {
+    // connect the current node to its true descendant
+    stream << b->id << " -> ";
+    if (b->if_true != bdd.true_node && b->if_true != bdd.false_node)
+      stream << b->if_true->id << ";\n";
+    else
+      stream << (b->if_true == bdd.true_node ? true_name : false_name) << ";\n";
+
+    // connect the current node to its false descendant
+    stream << b->id << " -> ";
+    if (b->if_false != bdd.true_node && b->if_false != bdd.false_node)
+      stream << b->if_false->id;
+    else
+      stream << (b->if_false == bdd.true_node ? true_name : false_name);
+    stream << "[style=dotted]"
+           << ";\n";
+  }
+
+  stream << "}";
+
+  return stream;
+}
+
+// We implement a recursive port-order traversal of the BDD
+bool BDD::is_removable(Node *b) {
+  if (b == nullptr) {
+    return false;
+  }
+
+  // Überprüfen Sie rekursiv, ob die Nachfolger entfernt werden können
+  bool removable_if_true = is_removable(b->if_true);
+  bool removable_if_false = is_removable(b->if_false);
+
+  // Entfernen Sie die Nachfolger, falls sie entfernt werden können
+  if (removable_if_true) {
+    b->if_true = nullptr;
+  }
+  if (removable_if_false) {
+    b->if_false = nullptr;
+  }
+
+  // Überprüfen Sie, ob beide Nachfolger auf denselben Knoten zeigen
+  if (b->if_true == b->if_false) {
     return true;
   }
-  </code></pre>
-      Here is stackTest.cpp:
-      <pre><code>
-  #include <gtest/gtest.h>
-  
-  #include "board.hpp"
-  #include "stack.hpp"
-  
-  TEST(StackTest, pushTest) {
-    const Board a(4);
-    const Board b(5);
-    Stack s;
-  
-    ASSERT_TRUE(s.empty());
-    s.push(a);
-    assert(s.stack[0] == a);
-  
-    ASSERT_FALSE(s.empty());
-    s.push(b);
-  
-    assert(s.stack[0] == a);
-    ASSERT_EQ(s.stack[0], a);
-    ASSERT_EQ(s.stack[1], b);
-  
-    const Board c = s.top();
-    ASSERT_EQ(b, c);
-    s.pop();
-  
-    const Board d = s.top();
-    ASSERT_EQ(d, a);
-    s.pop();
-  
-    ASSERT_TRUE(s.empty());
-    s.pop();
-    ASSERT_TRUE(s.empty());
+
+  return false;
+}
+
+// remove useless parts of the entire BDD, by checking if the root should be
+// removed
+void BDD::normalize_bdd() {
+  // Überprüfen Sie rekursiv, ob der Wurzelknoten entfernt werden kann
+  is_removable(root);
+
+  // Entfernen Sie alle Knoten, die als löschbar markiert sind
+  for (auto it = nodes.begin(); it != nodes.end();) {
+    Node *n = *it;
+    if (n->to_delete) {
+      delete n;
+      it = nodes.erase(it);
+    } else {
+      ++it;
+    }
   }
-  
-  int main() {
-    testing::InitGoogleTest();
-    return RUN_ALL_TESTS();
+}</code></pre>
+    Here is bddMain.cpp:
+    <pre><code>
+#include "bdd.hpp"
+
+int main() { BDD bdd; }</code></pre>
+    Here is bddTest.cpp:
+    <pre><code>
+#include <fstream>
+#include <gtest/gtest.h>
+#include <iostream>
+
+#include "bdd.hpp"
+#include "node.hpp" // Stellen Sie sicher, dass diese Zeile vorhanden ist
+#include "board.hpp" // Stellen Sie sicher, dass diese Zeile vorhanden ist
+
+// In this test, we construct a simple BDD with boards of length 4 and we write
+// the corresponding graph to a file.
+TEST(BDDTest, basicTest) {
+  // create two distinct nodes a and b
+  Board a(4);
+  a.next(true);
+  Board b(4);
+  BDD bdd;
+
+  bool already_exists = false;
+  Node *a1 = bdd.import_node(a, already_exists);
+
+  ASSERT_TRUE(a.has_next(true));
+  a.next(true);
+  Node *a2 = bdd.import_node(a, already_exists);
+
+  ASSERT_TRUE(b.has_next(false));
+  b.next(false);
+
+  Node *b2 = bdd.import_node(b, already_exists);
+  bdd.connect(a1, a2, true);
+  bdd.connect(a1, b2, false);
+  ASSERT_EQ(a1->if_true, a2);
+  ASSERT_EQ(a1->if_false, b2);
+  ASSERT_EQ(bdd.root, a1);
+
+  bdd.connect_true(a2, true);
+  bdd.connect_true(a2, false);
+
+  bdd.connect_true(b2, true);
+  bdd.connect_false(b2, false);
+
+  ASSERT_EQ(bdd.count_true_path(), 3);
+
+  std::ofstream myfile;
+  myfile.open("small_test_bdd.txt");
+  if (myfile.is_open()) {
+    myfile << bdd;
+    myfile.close();
   }
-  </code></pre>
-      Here is bdd.hpp:
-      <pre><code>
-  #ifndef BLATT_BDD_BDD
-  #define BLATT_BDD_BDD
-  
-  #include <gtest/gtest.h>
-  #include <ostream>
-  #include <vector>
-  
-  #include "node.hpp"
-  
-  // This is a very simple implementation of a BDD (binary decision diagram).
-  //
-  // There are two special nodes `true_node' and `false_node' that represent 1 and
-  // 0 of the BDD.
-  //
-  // The interface is very simple in order to construct the BDD:
-  //
-  //  - it is possible to import a Board. This returns the node as imported by the
-  //  BDD
-  //  - Nodes can be connected via `connect_true' and `connect_false'
-  //
-  //
-  // Internally, all nodes are stored in the `nodes' vector in order do be able to
-  // destray all the nodes.
-  class BDD {
-  public:
-    BDD() : fresh_id(0), root(nullptr) {}
-  
-    Node *import_node(const Board &b);
-  
-    ~BDD() {
-      for (auto &n : nodes)
-        delete n;
-    }
-  
-    friend class Node;
-  
-    // connect two nodes together
-    // assuming that parent does not have a children already
-    void connect(Node *parent, Node *children, bool if_true);
-  
-    // connect to true or false
-    void connect_true(Node *parent, bool if_true);
-    void connect_false(Node *parent, bool if_true);
-  
-    // counts the number of paths leading to true
-    int count_true_path() const;
-  
-    // Write the graph as a dot (graphviz) file.
-    friend std::ostream &operator<<(std::ostream &stream, const BDD &bdd);
-  
-    // write the BDD into file provided by the argument
-    void write_dot_file(std::string file) const;
-  
-  private:
-    int fresh_id;
-    Node *root;
-    Node *const true_node = (Node *)1;
-    Node *const false_node = (Node *)2;
-    std::vector<Node *> nodes;
-    FRIEND_TEST(BDDTest, basicTest);
-  };
-  
-  #endif
-  </code></pre>
-      Here is board.hpp:
-      <pre><code>
-  #ifndef BLATT_BDD_BOARD
-  #define BLATT_BDD_BOARD
-  
-  #include <gtest/gtest.h>
-  
-  #include <cstdio>
-  #include <string>
-  
-  // Representation of a configuration for our n-queens
-  // problem and iteration over all positions.
-  //
-  // Our class internally uses an array of int of a given size, where each int
-  // means:
-  //   - == 0 no queens in this column
-  //   - <0 no queen up to that position
-  //   - >0 the only queen is at that position.
-  //
-  // The board is already tailored toward our needs by disallowing 2 queens in
-  // this column. We also are using a fixed size.
-  //
-  // For each board, there are at most two successors: either the queen is at the
-  // next empty position (the column value was <= 0 and has now value > 0) or it
-  // is not (the column value was <=0 and is now decreased by 1).
-  class Board {
-  public:
-    Board() : size(0), board(nullptr) {}
-  
-    Board(int n) : size(n) {
-      board = new int[size];
-      for (int i = 0; i < size; ++i)
-        board[i] = 0;
-    }
-  
-    Board(const Board &pos) {
-      size = pos.size;
-      board = new int[size];
-      for (int i = 0; i < size; ++i)
-        board[i] = pos.board[i];
-    }
-  
-    Board(Board &&pos) {
-      size = pos.size;
-      board = pos.board;
-    }
-  
-    Board operator=(const Board &pos) {
-      delete board;
-      size = pos.size;
-      board = new int[size];
-      for (int i = 0; i < size; ++i)
-        board[i] = pos.board[i];
-      return *this;
-    }
-  
-    ~Board() { delete[] board; }
-  
-    bool operator==(const Board &b) const {
-      if (size != b.size)
-        return false;
-      for (int i = 0; i < size; ++i) {
-        if (board[i] != b.board[i])
-          return false;
-      }
-      return true;
-    }
-  
-    // checks if this position has a next position
-    bool has_next(bool taken) const;
-  
-    // changes the current position to the next one
-    // assuming that there is one
-    void next(bool taken);
-  
-    // give a board as a string with '|' separating the cells with 'D' for queens
-    // and when there is no queen, it prints '.' for positions where there is no
-    // queen. For example |D|.|_|
-    // |_|.|_|
-    // |_| |_|
-    // here the queen in the second column can only be at the very bottomx.
-    friend std::ostream &operator<<(std::ostream &stream, const Board &board);
-  
-    // checks if the current board is compatible with the rules
-    bool is_valid() const;
-  
-    // checks if the current board is compatible with the rules
-    bool is_full() const;
-  
-  private:
-    int size;
-    int *board;
-    FRIEND_TEST(BoardTest, nextTest);
-    FRIEND_TEST(BoardTest, stringTest);
-    FRIEND_TEST(BoardTest, validTest);
-  };
-  
-  #endif
-  </code></pre>
-      Here is node.hpp:
-      <pre><code>
-  #ifndef BLATT_BDD_NODE
-  #define BLATT_BDD_NODE
-  
-  #include "board.hpp"
-  
-  // Node in the BDD
-  //
-  // It contains 2 informations, the position and an id to help debugging
-  class Node {
-  public:
-    Node(int fresh_id, const Board &config)
-        : id(fresh_id), configuration(config), if_true(nullptr) {}
-    Node(int fresh_id, Board &&config)
-        : id(fresh_id), configuration(config), if_true(nullptr) {}
-  
-  public:
-    const int id;
-  
-    friend std::ostream &operator<<(std::ostream &stream, const Node &bdd);
-  
-    Board get_configuration() { return configuration; };
-  
-  private:
-    Board configuration;
-  
-  public:
-    Node *if_true;
-    Node *if_false;
-  };
-  
-  #endif</code></pre>
-      Here is nqueens.hpp:
-      <pre><code>
-  #ifndef BLATT_BDD_NQUEENS
-  #define BLATT_BDD_NQUEENS
-  
-  #include <stack>
-  
-  #include "bdd.hpp"
-  
-  class NQueens {
-  public:
-    NQueens(int n) : size(n) { construct_bdd(); }
-  
-    int count_solutions() { return bdd.count_true_path(); }
-  
-  private:
-    // construct the internal representation of the n-queens problem
-    void construct_bdd();
-  
-    // connect parent to its child (true or false depending on direction) and
-    // pushing the node to the stack
-    void check_and_add_child(Node *parent, bool direction,
-                             std::stack<Node *> &stack);
-    int size;
-    BDD bdd;
-  };
-  #endif</code></pre>
-      Here is stack.hpp:
-      <pre><code>
-  #ifndef BLATT_BDD_STACK
-  #define BLATT_BDD_STACK
-  
-  #include <gtest/gtest.h>
-  
-  #include "board.hpp"
-  
-  class Stack {
-  public:
-    Stack() : size(0), capacity(1), stack(nullptr) {}
-  
-    ~Stack() {
-      /*TODO: Übungsblatt 7, Aufgabe 2*/
-      assert(false);
-    }
-  
-    // push the element to the stack
-    void push(const Board &pos);
-  
-    // last element added
-    Board top() const;
-  
-    // deletes the last inserted element of the stack
-    void pop();
-  
-    // checks if the stack is empty
-    bool empty() const;
-  
-    // resize to match the capacity if required
-    void reserve(int n);
-  
-  private:
-    int size;
-    int capacity;
-    Board *stack;
-  
-    FRIEND_TEST(StackTest, pushTest);
-  };
-  #endif
-  </code></pre>
-  
-  
-Here is Makefile:
-<code><pre>
-CXX = g++
-CXXFLAGS=  --std=c++14 #-Wextra -Wall -pedantic
-EXCLUDED = poly2.cpp
-HEADERS = $(filter-out $(EXCLUDED), $(wildcard *.hpp))
-OBJECTS = $(addsuffix .o, $(basename  $(filter-out $(EXCLUDED) %Test.cpp %Main.cpp, $(wildcard *.cpp))))
-TESTLIBS = -lgtest -lgtest_main -lpthread
-TEST_BINARIES = $(basename $(wildcard *[Tt]est.cpp))
+}
 
-all: clean compile
-
-%.o: %.cpp $(HEADERS)
-	$(CXX) $(CXXFLAGS) -c $<
-
-%Main: %Main.cpp $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-compile: bddMain nqueensMain
-
-%Test: %Test.o $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)  $(TESTLIBS)
-
-test: $(TEST_BINARIES)
-	echo "$(TESTS)"
-	for test in `ls *Test` ; \
-	do \
-	./$$test || (echo "failed test $$test" && exit 255) \
-	done
-
-clean:
-	rm -f *Main *Test *.o
-
-format:
-	clang-format -i *.cpp *.hpp
-
-
+int main() {
+  testing::InitGoogleTest();
+  return RUN_ALL_TESTS();
+}
 </code></pre>
+    Here is board.cpp:
+    <pre><code>
+#include "board.hpp"
+
+#include <assert.h>
+
+#include <string>
+
+bool Board::has_next(bool taken) const {
+  int position_to_change = -1;
+  for (int i = 0; i < size; ++i) {
+    if (board[i] <= 0) {
+      position_to_change = i;
+      break;
+    }
+  }
+
+  if (position_to_change == -1) return false;
+
+  const int value = board[position_to_change];
+
+  if (!taken && size == -value + 1) return false;
+
+  return true;
+}
+
+void Board::next(bool taken) {
+  int position_to_change = -1;
+  for (int i = 0; i < size; ++i) {
+    if (board[i] <= 0) {
+      position_to_change = i;
+      break;
+    }
+  }
+
+  assert(position_to_change != -1);
+
+  const int value = board[position_to_change];
+
+  assert(taken || size != value - 1);
+
+  if (taken)
+    board[position_to_change] = -value + 1;
+  else
+    board[position_to_change] -= 1;
+}
+
+std::ostream &operator<<(std::ostream &stream, const Board &board) {
+  for (int line = 0; line < board.size; ++line) {
+    stream << "|";
+    for (int row = 0; row < board.size; ++row) {
+      if (board.board[row] - 1 == line)
+        stream << "d";
+      else if (board.board[row] < 0 && line <= -board.board[row] - 1)
+        stream << ".";
+      else
+        stream << " ";
+      stream << "|";
+    }
+    stream << "\n";
+  }
+  return stream;
+}
+
+// Checks if a position is valid: two queens are (i) on the same row if they
+// have the position and (ii) are on the same diagonal if the distance is the
+// same as the row distance.
+bool Board::is_valid() const {
+  for (int i = 0; i < size; ++i) {
+    if (board[i] < 0) continue;
+    if (board[i] > 0) {
+      for (int j = 0; j < size; ++j) {
+        if (i == j || board[j] <= 0) continue;
+        if (board[i] == board[j]) {
+          return false;
+        }
+        if (std::abs(board[i] - board[j]) == std::abs(i - j)) return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+bool Board::is_full() const {
+  for (int i = 0; i < size; ++i) {
+    if (board[i] <= 0) return false;
+  }
+
+  return true;
+}
+
+bool Board::has_symmetries() const {
+  // Überprüfen, ob die Dame in der ersten Hälfte der Spalte steht
+  if (board[0] > size / 2) {
+    return true;
+  }
+  // Überprüfen, ob die Dame in der letzten Spalte eine niedrigere board hat
+  // als die Dame in der ersten Spalte
+  if (board[size - 1] < board[0]) {
+    return true;
+  }
+  return false;
+}
+
+void Board::horizontal_flip() {
+  for (int i = 0; i < size; i++) {
+    board[i] = size - board[i] - 1;
+  }
+}
+
+void Board::vertical_flip() {
+  for (int i = 0; i < size / 2; i++) {
+    std::swap(board[i], board[size - i - 1]);
+  }
+}
+
+void Board::symmetry_normalize() {
+  if (board[0] > size / 2) {
+    horizontal_flip();
+  }
+  if (board[size - 1] < board[0]) {
+    vertical_flip();
+  }
+}
+
+bool Board::operator<(const Board &n) const {
+  if (size != n.size) {
+    return size < n.size;
+  }
+  for (int i = 0; i < size; i++) {
+    if (board[i] != n.board[i]) {
+      return board[i] < n.board[i];
+    }
+  }
+  return false;
+}
+
+bool Board::operator<=(const Board &n) const { return *this < n || *this == n; }</code></pre>
+    Here is boardTest.cpp:
+    <pre><code>
+#include <gtest/gtest.h>
+
+#include "board.hpp"
+
+TEST(BoardTest, nextTest) {
+  Board b(3);
+  b.board[0] = -1;
+
+  ASSERT_TRUE(b.has_next(true));
+
+  b.next(true);
+  ASSERT_EQ(b.board[0], 2);
+
+  ASSERT_TRUE(b.has_next(false));
+  b.next(false);
+  ASSERT_EQ(b.board[0], 2);
+  ASSERT_EQ(b.board[1], -1);
+
+  ASSERT_TRUE(b.has_next(false));
+  b.next(false);
+  ASSERT_EQ(b.board[0], 2);
+  ASSERT_EQ(b.board[1], -2);
+
+  ASSERT_FALSE(b.has_next(false));
+
+  ASSERT_TRUE(b.has_next(true));
+  b.next(true);
+  ASSERT_EQ(b.board[0], 2);
+  ASSERT_EQ(b.board[1], 3);
+  ASSERT_EQ(b.size, 3);
+
+  ASSERT_TRUE(b.has_next(true));
+  b.next(true);
+  ASSERT_EQ(b.board[0], 2);
+  ASSERT_EQ(b.board[1], 3);
+  ASSERT_EQ(b.board[2], 1);
+  ASSERT_EQ(b.size, 3);
+}
+
+TEST(BoardTest, stringTest) {
+  Board b(3);
+  b.board[0] = 3;
+  b.board[1] = 1;
+  b.board[2] = 2;
+
+  std::stringstream b_position;
+  b_position << b;
+  ASSERT_EQ(b_position.str(), "| |d| |\n"
+                              "| | |d|\n"
+                              "|d| | |\n");
+  b.board[0] = -3;
+  b.board[1] = 1;
+  b.board[2] = 2;
+
+  std::stringstream c_position;
+  c_position << b;
+  ASSERT_EQ(c_position.str(), "|.|d| |\n"
+                              "|.| |d|\n"
+                              "|.| | |\n");
+}
+
+TEST(BoardTest, validTest) {
+  Board b(4);
+  b.board[0] = 3;
+  b.board[1] = 1;
+  b.board[2] = 4;
+  b.board[3] = 2;
+  ASSERT_TRUE(b.is_valid());
+
+  b.board[3] = -2;
+  ASSERT_TRUE(b.is_valid());
+
+  b.board[3] = 1;
+  ASSERT_FALSE(b.is_valid());
+
+  b.board[0] = 1;
+  b.board[1] = -1;
+  b.board[2] = -4;
+  b.board[3] = 4;
+  ASSERT_FALSE(b.is_valid());
+
+  b.board[0] = 4;
+  b.board[1] = 2;
+  b.board[2] = 0;
+  b.board[3] = 0;
+  ASSERT_TRUE(b.is_valid());
+
+  b.board[0] = 4;
+  b.board[1] = 1;
+  b.board[2] = 0;
+  b.board[3] = 0;
+  ASSERT_TRUE(b.is_valid());
+}
+
+TEST(BoardTest, flipTest) {
+
+  Board b(4);
+  b.board[0] = 3;
+  b.board[1] = 1;
+  b.board[2] = 4;
+  b.board[3] = 2;
+
+  ASSERT_TRUE(b.has_symmetries());
+  b.horizontal_flip();
+
+  ASSERT_EQ(b.board[0], 2);
+  ASSERT_EQ(b.board[1], 4);
+  ASSERT_EQ(b.board[2], 1);
+  ASSERT_EQ(b.board[3], 3);
+
+  ASSERT_FALSE(b.has_symmetries());
+
+  b.vertical_flip();
+  ASSERT_EQ(b.board[0], 3);
+  ASSERT_EQ(b.board[1], 1);
+  ASSERT_EQ(b.board[2], 4);
+  ASSERT_EQ(b.board[3], 2);
+
+  ASSERT_TRUE(b.has_symmetries());
+
+  b.symmetry_normalize();
+
+  ASSERT_EQ(b.board[0], 2);
+  ASSERT_EQ(b.board[1], 4);
+  ASSERT_EQ(b.board[2], 1);
+  ASSERT_EQ(b.board[3], 3);
+
+  b.vertical_flip();
+  ASSERT_EQ(b.board[0], 3);
+  ASSERT_EQ(b.board[1], 1);
+  ASSERT_EQ(b.board[2], 4);
+  ASSERT_EQ(b.board[3], 2);
+
+  b.board[3] = 0;
+  ASSERT_TRUE(b.has_symmetries());
+
+  b.board[1] = -3;
+  ASSERT_FALSE(b.has_symmetries());
+
+  b.board[1] = 1;
+  b.board[4] = 0;
+  ASSERT_TRUE(b.has_symmetries());
+
+  b.board[0] = 3;
+  b.board[1] = 0;
+  b.board[2] = 0;
+  b.board[3] = 0;
+
+  ASSERT_TRUE(b.has_symmetries());
+}
+
+TEST(BoardTest, orderTest) {
+
+  Board b(4);
+  b.board[0] = 3;
+  b.board[1] = 1;
+  b.board[2] = 4;
+  b.board[3] = 2;
+
+  Board c(4);
+  c.board[0] = 3;
+  c.board[1] = 1;
+  c.board[2] = 4;
+  c.board[3] = 2;
+
+  ASSERT_LE(b, c);
+  ASSERT_FALSE(b < c);
+
+  c.board[0] = -1;
+  ASSERT_LE(c, b);
+  ASSERT_LT(c, b);
+
+  c.board[0] = 4;
+  c.board[3] = 3;
+  ASSERT_LE(b, c);
+  ASSERT_LT(b, c);
+
+  Board e(0);
+
+  ASSERT_LE(e, b);
+  ASSERT_LT(e, b);
+}
+
+int main() {
+  testing::InitGoogleTest();
+  return RUN_ALL_TESTS();
+}
+</code></pre>
+    Here is node.cpp:
+    <pre><code>
+#include "node.hpp"
+
+std::ostream &operator<<(std::ostream &stream, const Node &node) {
+  stream << node.configuration;
+  return stream;
+}
+</code></pre>
+    Here is nqueens.cpp:
+    <pre><code>
+#include "nqueens.hpp"
+
+#include <fstream>
+#include <stack>
+
+void NQueens::check_and_add_child(Node *parent, bool direction,
+                                  std::stack<Node *> &stack) {
+  /*ÜB10, Aufgabe 6, optional*/
+  Board b = parent->get_configuration();
+  if (!b.has_next(direction)) {
+    bdd.connect_false(parent, direction);
+    return;
+  }
+
+  b.next(direction);
+  const bool valid = b.is_valid();
+  if (!valid) {
+    bdd.connect_false(parent, direction);
+    return;
+  }
+  if (b.is_full()) {
+    assert(valid);
+    bdd.connect_true(parent, direction);
+    return;
+  } else {
+    bool already_exists = false;
+    Node *child = bdd.import_node(b, already_exists);
+    if (!already_exists) stack.push(child);
+    bdd.connect(parent, child, direction);
+  }
+  return;
+}
+
+void NQueens::construct_bdd() {
+  Board b(size);
+  std::stack<Node *> stack;
+
+  bool already_exists = false;
+  Node *n = bdd.import_node(b, already_exists);
+  stack.push(n);
+
+  int next_limit = size;
+  int visited_nodes = 1;
+
+  while (!stack.empty()) {
+    Node *n = stack.top();
+    stack.pop();
+
+    // Überprüfen Sie, ob die Position Symmetrien aufweist
+    if (n->get_configuration().has_symmetries()) {
+      Board new_board = n->get_configuration();
+      new_board.symmetry_normalize();
+      auto it = std::find_if(bdd.get_nodes().begin(), bdd.get_nodes().end(),
+                             [&new_board](const Node *node) {
+                               return node->get_configuration() == new_board;
+                             });
+      if (it != bdd.get_nodes().end()) {
+        already_exists = true;
+      }
+    }
+
+    if (!already_exists) {
+      check_and_add_child(n, false, stack);
+      check_and_add_child(n, true, stack);
+      visited_nodes += 2;
+    }
+
+    if (visited_nodes >= next_limit) {
+      next_limit *= 2;
+      bdd.normalize_bdd();
+    }
+  }
+
+  bdd.normalize_bdd();
+}</code></pre>
+    Here is nqueensMain.cpp:
+    <pre><code>
+#include "nqueens.hpp"
+
+int main() {
+  NQueens queens(4);
+  std::cout << queens.count_solutions();
+}
+</code></pre>
+    Here is nqueensTest.cpp:
+    <pre><code>
+#include <gtest/gtest.h>
+
+#include "nqueens.hpp"
+
+int create_nqueens_and_count(int n) {
+  NQueens queens(n);
+  return queens.count_solutions();
+}
+
+int create_nqueens_and_count_fundamental(int n) {
+  NQueens queens(n);
+  return queens.count_fundamental_solutions();
+}
+
+TEST(NQueensTest, ValueTest) {
+  ASSERT_EQ(create_nqueens_and_count(4), 2);
+  ASSERT_EQ(create_nqueens_and_count(5), 10);
+  ASSERT_EQ(create_nqueens_and_count(6), 4);
+  ASSERT_EQ(create_nqueens_and_count(7), 40);
+  ASSERT_EQ(create_nqueens_and_count(8), 92);
+}
+TEST(NQueensTest, FundamentalSolutionsTest) {
+  ASSERT_EQ(create_nqueens_and_count_fundamental(4), 1);
+  ASSERT_EQ(create_nqueens_and_count_fundamental(5), 2);
+  ASSERT_EQ(create_nqueens_and_count_fundamental(6), 1);
+  ASSERT_EQ(create_nqueens_and_count_fundamental(7), 6);
+  ASSERT_EQ(create_nqueens_and_count_fundamental(8), 12);
+}
+
+int main() {
+  testing::InitGoogleTest();
+  return RUN_ALL_TESTS();
+}
+</code></pre>
+    Here is stack.cpp:
+    <pre><code>
+#include "stack.hpp"
+#include "board.hpp"
+#include "node.hpp"
+
+template <typename T> void Stack<T>::reserve(int n) {
+  if (n < capacity)
+    return;
+
+  capacity = n;
+  T *nb = new T[n];
+  for (int i = 0; i < size; ++i)
+    nb[i] = stack[i];
+
+  delete[] stack;
+  stack = nb;
+}
+
+template <typename T> void Stack<T>::push(const T &board) {
+  if (size + 1 >= capacity)
+    reserve(2 * capacity);
+
+  assert(size < capacity);
+  stack[size] = std::move(board);
+  ++size;
+}
+
+template <typename T> void Stack<T>::pop() {
+  if (!size)
+    return;
+  --size;
+}
+
+template <typename T> T Stack<T>::top() const { return stack[size - 1]; }
+
+template <typename T> bool Stack<T>::empty() const { return size == 0; }
+
+// instantiation
+template class Stack<Node *>;
+template class Stack<Board *>;
+template class Stack<Board>;</code></pre>
+    Here is stackTest.cpp:
+    <pre><code>
+#include <gtest/gtest.h>
+
+#include "board.hpp"
+#include "stack.hpp"
+
+TEST(StackTest, pushTest) {
+  const Board a(4);
+  const Board b(5);
+  Stack<Board> s;
+
+  ASSERT_TRUE(s.empty());
+  s.push(a);
+  assert(s.stack[0] == a);
+
+  ASSERT_FALSE(s.empty());
+  s.push(b);
+
+  assert(s.stack[0] == a);
+  ASSERT_EQ(s.stack[0], a);
+  ASSERT_EQ(s.stack[1], b);
+
+  const Board c = s.top();
+  ASSERT_EQ(b, c);
+  s.pop();
+
+  const Board d = s.top();
+  ASSERT_EQ(d, a);
+  s.pop();
+
+  ASSERT_TRUE(s.empty());
+  s.pop();
+  ASSERT_TRUE(s.empty());
+}
+
+int main() {
+  testing::InitGoogleTest();
+  return RUN_ALL_TESTS();
+}
+</code></pre>
+    Here is bdd.hpp:
+    <pre><code>
+#ifndef BLATT_BDD_BDD
+#define BLATT_BDD_BDD
+
+#include <gtest/gtest.h>
+
+#include <ostream>
+#include <vector>
+
+#include "node.hpp"
+
+// This is a very simple implementation of a BDD (binary decision diagram).
+//
+// There are two special nodes `true_node' and `false_node' that represent 1 and
+// 0 of the BDD.
+//
+// The interface is very simple in order to construct the BDD:
+//
+//  - it is possible to import a Board. This returns the node as imported by the
+//  BDD
+//
+//  - Nodes can be connected via `connect_true' and `connect_false' (for
+//  connection to true or
+//  - false) and `connect' to connect two nodes
+//
+//
+// Internally, all nodes are stored in the `nodes' vector in order do be able to
+// destray all the nodes.
+//
+// NEW: internally we use the to_delete flag in nodes, but the invariant that is
+// true (except within functions) is that it is always set to false.
+class BDD {
+ public:
+  BDD() : fresh_id(0), root(nullptr) {}
+
+  BDD(const BDD &) = delete;
+  BDD(BDD &&) = delete;
+
+  // This function imports a Board and returns a node. The successors of the
+  // nodes are set to the false node automatically.
+  //
+  // NEW ÜB10
+  // If the node has symmetries, we check if the fundamental node is already
+  // present and set the already_exists parameter.
+  Node *import_node(const Board &b, bool &already_exists);
+
+  // destructor
+  ~BDD() {
+    for (auto &n : nodes) {
+      delete n;
+    }
+  }
+
+  friend class Node;
+
+  // connect two nodes together
+  // overwriting any existing relationships.
+  void connect(Node *parent, Node *children, bool if_true);
+
+  // connect the node to the true or false node assuming that parent is valid
+  // pointer to a node (neither true nor false)
+  void connect_true(Node *parent, bool if_true);
+  void connect_false(Node *parent, bool if_true);
+
+  // counts the number of paths leading to true
+  int count_true_path() const;
+
+  // count the number of fundamental paths leading to true
+  /*NEW ÜB 10, Aufgabe 12*/
+  int count_fundamental_true_path() const;
+
+  // Write the graph as a dot (graphviz) file.
+  friend std::ostream &operator<<(std::ostream &stream, const BDD &bdd);
+
+  // normalization of the BDD by getting rid of of the paths to false
+  void normalize_bdd();
+
+  const std::vector<Node *> &get_nodes() const { return nodes; }
+
+ private:
   
-    </main>
-  
+  // we number of nodes starting from 0 upwards.
+  int fresh_id;
+
+  // Root node. If our BDD contains any node, then one of them is the root file.
+  Node *root;
+
+  // This are two specific nodes, true or false. These nodes have a specific
+  // meaning and should not be seen as nodes that can be dereferenced.
+  Node *const true_node = (Node *)1;
+  Node *const false_node = (Node *)2;
+
+  // checks if all the nodes are going to false. In this case, the function
+  // returns true and replace the children of the parameter by false_node.
+  bool is_removable(Node *);
+
+  struct NodeCmp {
+    bool operator()(Node *const &lhs, Node *const &rhs) const {
+      return *lhs < *rhs;
+    }
+  };
+
+  // A list of all nodes within the class sorted.  It is necessary to define the
+  // ordering. Otherwise, the ordering on pointers is used (very painful
+  // debugging experience).
+  // NEW ÜB10: changed from an unsorted vector to a (sorted) set for efficient
+  // search.
+  std::vector<Node *> nodes;
+  // std::set<Node *, NodeCmp> nodes;
+
+  FRIEND_TEST(BDDTest, basicTest);
+};
+
+#endif</code></pre>
+    Here is board.hpp:
+    <pre><code>
+#ifndef BLATT_BDD_BOARD
+#define BLATT_BDD_BOARD
+
+#include <gtest/gtest.h>
+
+#include <cstdio>
+#include <string>
+
+// Representation of a configuration for our n-queens
+// problem and iteration over all positions.
+//
+// Our class internally uses an array of int of a given size, where each int
+// means:
+//   - == 0 no queens in this column
+//   - <0 no queen up to that position
+//   - >0 the only queen is at that position.
+//
+// The board is already tailored toward our needs by disallowing 2 queens in
+// this column. We also are using a fixed size.
+//
+// For each board, there are at most two successors: either the queen is at the
+// next empty position (the column value was <= 0 and has now value > 0) or it
+// is not (the column value was <=0 and is now decreased by 1).
+class Board {
+public:
+  Board() : size(0), board(nullptr) {}
+
+  Board(int n) : size(n) {
+    board = new int[n];
+    for (int i = 0; i < n; ++i)
+      board[i] = 0;
+  }
+
+  Board(const Board &pos) {
+    size = pos.size;
+    board = new int[size];
+    for (int i = 0; i < size; ++i)
+      board[i] = pos.board[i];
+  }
+
+  Board(Board &&pos) {
+    size = pos.size;
+    board = pos.board;
+    pos.size = 0;
+    pos.board = nullptr;
+  }
+
+  Board operator=(const Board &pos) {
+    delete[] board;
+    size = pos.size;
+    board = new int[size];
+    for (int i = 0; i < size; ++i)
+      board[i] = pos.board[i];
+    return *this;
+  }
+
+  Board operator=(Board &&pos) {
+    size = pos.size;
+    board = pos.board;
+    pos.size = 0;
+    pos.board = nullptr;
+    return *this;
+  }
+
+  ~Board() { delete[] board; }
+
+  bool operator==(const Board &b) const {
+    if (size != b.size)
+      return false;
+    for (int i = 0; i < size; ++i) {
+      if (board[i] != b.board[i])
+        return false;
+    }
+    return true;
+  }
+
+  // checks if this position has a next position
+  bool has_next(bool taken) const;
+
+  // changes the current position to the next one
+  // assuming that there is one
+  void next(bool taken);
+
+  // give a board as a string with '|' separating the cells with 'D' for queens
+  // and when there is no queen, it prints '.' for positions where there is no
+  // queen. For example |D|.|_|
+  // |_|.|_|
+  // |_| |_|
+  // here the queen in the second column can only be at the very bottomx.
+  friend std::ostream &operator<<(std::ostream &stream, const Board &board);
+
+  // checks if the current board is compatible with the rules
+  bool is_valid() const;
+
+  // checks if the current board is compatible with the rules
+  bool is_full() const;
+
+  bool has_symmetries() const;
+  void symmetry_normalize();
+
+  // precondition: no negative numbers!
+  void horizontal_flip();
+  void vertical_flip();
+
+  // Shortlex order on the elements on the board.
+  // Negative entries are considered as negative numbers.
+  /*NEW ÜB 10, Aufgabe 9*/
+  bool operator<(const Board &n) const;
+
+  // Shortlex order on the elements on the board
+  // Negative entries are considered as negative numbers.
+  /*NEW ÜB 10, Aufgabe 9*/
+  bool operator<=(const Board &n) const;
+
+private:
+  int size;
+  int *board;
+  FRIEND_TEST(BoardTest, nextTest);
+  FRIEND_TEST(BoardTest, stringTest);
+  FRIEND_TEST(BoardTest, validTest);
+  FRIEND_TEST(BoardTest, flipTest);
+  FRIEND_TEST(BoardTest, orderTest);
+};
+
+#endif
+</code></pre>
+    Here is node.hpp:
+    <pre><code>
+#ifndef BLATT_BDD_NODE
+#define BLATT_BDD_NODE
+
+#include <gtest/gtest.h>
+
+#include "board.hpp"
+
+// Node in the BDD
+//
+// It contains 2 informations, the position and an id to help debugging
+// We initialize the successor to be the null pointer.
+class Node {
+public:
+  // NEW ÜB10: make it clear that initialized with nullptr
+  Node(int fresh_id, const Board &config)
+  : id(fresh_id), configuration(config), if_true(nullptr), if_false (nullptr) {}
+  Node(int fresh_id, Board &&config)
+  : id(fresh_id), configuration(config), if_true(nullptr), if_false (nullptr) {}
+
+public:
+  // identifier used whenever we need a number or something to distinguish it
+  // from other nodes.
+  const int id;
+
+  // brind the content of
+  friend std::ostream &operator<<(std::ostream &stream, const Node &bdd);
+
+  // returns a copy of the configuration
+  Board get_configuration() const { return configuration; };
+
+private:
+  Board configuration;
+
+public:
+  // connection to the two successors when taken and when not taken
+  Node *if_true;
+  Node *if_false;
+
+  // to_delete to indicate some information on the node
+  // we use this in various cases
+  // by default the value is false
+  bool to_delete = false;
+
+  bool operator==(const Node &n) const {
+    return configuration == n.configuration;
+  }
+
+  bool operator<(const Node &n) const {
+    return configuration < n.configuration;
+  }
+
+  bool operator<=(const Node &n) const {
+    return configuration <= n.configuration;
+  }
+};
+
+#endif</code></pre>
+    Here is nqueens.hpp:
+    <pre><code>
+#ifndef BLATT_BDD_NQUEENS
+#define BLATT_BDD_NQUEENS
+
+#include <stack>
+
+#include "bdd.hpp"
+
+class NQueens {
+public:
+  NQueens(int n) : size(n) { construct_bdd(); }
+
+  // counts the number of solutions to the nqueens problems.
+  // Assumes that the construction is finished
+  int count_solutions() { return bdd.count_true_path(); }
+
+  // counts the number of fundamental solutions to the nqueens problems.
+  // Assumes that the construction is finished
+  /*NEW ÜB 10, Aufgabe 12*/
+  int count_fundamental_solutions() {
+    return bdd.count_fundamental_true_path();
+  }
+
+private:
+  // construct the internal representation of the n-queens problem
+  void construct_bdd();
+
+  // connect parent to its child (true or false depending on direction) and
+  // pushing the node to the stack
+  void check_and_add_child(Node *parent, bool direction,
+                           std::stack<Node *> &stack);
+  int size;
+  BDD bdd;
+};
+#endif</code></pre>
+    Here is stack.hpp:
+    <pre><code>
+#ifndef BLATT_BDD_STACK
+#define BLATT_BDD_STACK
+
+#include <gtest/gtest.h>
+
+#include "board.hpp"
+
+template <typename T> class Stack {
+public:
+  Stack() : size(0), capacity(1), stack(nullptr) {}
+
+  ~Stack() { delete[] stack; }
+
+  // push the element to the stack
+  void push(const T &pos);
+
+  // last element added
+  T top() const;
+
+  // deletes the last inserted element of the stack
+  void pop();
+
+  // checks if the stack is empty
+  bool empty() const;
+
+  // resize to match the capacity if required
+  void reserve(int n);
+
+  const T operator[](int n) const { return stack[n]; }
+
+  int number_of_elements() const { return size; }
+
+private:
+  int size;
+  int capacity;
+  T *stack;
+
+  FRIEND_TEST(StackTest, pushTest);
+};
+
+#endif
+</code></pre>
+
+  </main>
 </body>
 
 </html>
