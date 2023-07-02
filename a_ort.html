@@ -227,6 +227,46 @@
   
   
       </pre>
+
+    <pre>
+        <code>
+          CXX = g++
+          CXXFLAGS=  --std=c++14 #-Wextra -Wall -pedantic
+          EXCLUDED = poly2.cpp
+          HEADERS = $(filter-out $(EXCLUDED), $(wildcard *.hpp))
+          OBJECTS = $(addsuffix .o, $(basename  $(filter-out $(EXCLUDED) %Test.cpp %Main.cpp, $(wildcard *.cpp))))
+          TESTLIBS = -lgtest -lgtest_main -lpthread
+          TEST_BINARIES = $(basename $(wildcard *[Tt]est.cpp))
+          
+          all: clean compile
+          
+          %.o: %.cpp $(HEADERS)
+            $(CXX) $(CXXFLAGS) -c $<
+          
+          %Main: %Main.cpp $(OBJECTS)
+            $(CXX) $(CXXFLAGS) -o $@ $^
+          
+          compile: bddMain nqueensMain
+          
+          %Test: %Test.o $(OBJECTS)
+            $(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)  $(TESTLIBS)
+          
+          test: $(TEST_BINARIES)
+            echo "$(TESTS)"
+            for test in `ls *Test` ; \
+            do \
+            ./$$test || (echo "failed test $$test" && exit 255) \
+            done
+          
+          clean:
+            rm -f small_test_bdd*.txt *Main *Test *.o 
+          
+          format:
+            clang-format -i *.cpp *.hpp
+          
+        </code>
+      </pre>
+
     Here is bdd.cpp:
     <pre><code>
       #include "bdd.hpp"
@@ -316,28 +356,36 @@
       }
       
       int BDD::count_true_path() const {
-        /*ÜB9, Aufgabe 7*/
-        return 0;
-        Stack<Node *> queue;
+        // We create a stack for storing the nodes to visit
+        Stack<Node*> stack;
+        // We create a variable for storing the number of paths
         int path = 0;
-      
+        // We check if the root node is null
         if (!root) return 0;
-      
-        queue.push(root);
-      
-        while (!queue.empty()) {
-          Node *b = queue.top();
-          queue.pop();
-          if (b == true_node) {
+        // We push the root node into the stack
+        stack.push(root);
+        // We repeat until the stack is empty
+        while (!stack.empty()) {
+          // We pop the top node from the stack
+          Node *n = stack.top();
+          stack.pop();
+          // We check if the node is true
+          if (n == true_node) {
+            // We increment the path variable
             ++path;
+            // We skip the rest of the loop
             continue;
           }
-          if (b == false_node) continue;
-      
-          queue.push(b->if_true);
-          queue.push(b->if_false);
+          // We check if the node is false
+          if (n == false_node) {
+            // We skip the rest of the loop
+            continue;
+          }
+          // We push both successors of the node into the stack
+          stack.push(n->if_true);
+          stack.push(n->if_false);
         }
-      
+        // We return the path variable
         return path;
       }
       
