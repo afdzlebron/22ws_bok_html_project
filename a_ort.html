@@ -40,8 +40,8 @@
 <main>
   Here is bdd.cpp:
   <pre><code>
-  // Comment
-    #include "bdd.hpp"
+  // Actual Comment
+  #include "bdd.hpp"
   
   #include <vector>
   
@@ -95,26 +95,30 @@
   }
   
   int BDD::count_true_path() const {
-    /*ÜB9, Aufgabe 7*/
-    return 0;
-    Stack<Node *> queue;
-    int path = 0;
+    // Wir verwenden einen Stack, um das BDD zu durchlaufen
+    Stack<Node *> stack;
   
-    if (!root) return 0;
+    int path = 0;  // Die Anzahl der Pfade
   
-    queue.push(root);
+    if (!root) return path;  // Wenn das BDD leer ist, gibt es keine Pfade
   
-    while (!queue.empty()) {
-      Node *b = queue.top();
-      queue.pop();
+    stack.push(root);  // Wir beginnen mit dem Wurzelknoten
+  
+    while (!stack.empty()) {
+      Node *b = stack.top();
+      stack.pop();
+  
       if (b == true_node) {
-        ++path;
+        ++path;  // Wenn wir ein Blatt erreichen, erhöhen wir die Anzahl der Pfade
         continue;
       }
-      if (b == false_node) continue;
   
-      queue.push(b->if_true);
-      queue.push(b->if_false);
+      if (b == false_node)
+        continue;  // Wenn wir einen falschen Knoten erreichen, ignorieren wir ihn
+  
+      stack.push(b->if_true);  // Wir fügen den wahren Nachfolger zum Stack hinzu
+      stack.push(
+          b->if_false);  // Wir fügen den falschen Nachfolger zum Stack hinzu
     }
   
     return path;
@@ -1307,6 +1311,7 @@
   
   #endif
   </code></pre>
+  
 
 
   Here is Makefile:
