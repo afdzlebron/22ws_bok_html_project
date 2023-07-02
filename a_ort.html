@@ -40,7 +40,7 @@
 <main>
   Here is bdd.cpp:
   <pre><code>
-  // Actual Comment
+  // Commenting
   #include "bdd.hpp"
   
   #include <vector>
@@ -128,7 +128,13 @@
     /*NEW ÜB 10, Aufgabe 10*/
     /*TODO ÜB10, Aufgabe 12*/
   
-    // Wir verwenden einen Stack, um das BDD zu durchlaufen
+    // Wir verwenden einen Stack, um das BDD zu durchlaufen und die Anzahl der
+    // fundamentalen Pfade zu zählen, die zum wahren Knoten führen. Dabei werden
+    // die Knoten, die bereits besucht wurden, mit dem `to_delete`-Flag markiert,
+    // um sie nicht doppelt zu zählen. Am Ende werden alle `to_delete`-Flags
+    // wieder auf false zurückgesetzt. Diese Methode ermöglicht es, die Anzahl der
+    // fundamentalen Lösungen für das n-Damen-Problem zu bestimmen.
+  
     Stack<Node *> stack;
   
     int path = 0;  // Die Anzahl der fundamentalen Pfade
@@ -150,9 +156,18 @@
         continue;  // Wenn wir einen falschen oder gelöschten Knoten erreichen,
                    // ignorieren wir ihn
   
-      stack.push(b->if_true);  // Wir fügen den wahren Nachfolger zum Stack hinzu
-      stack.push(
-          b->if_false);  // Wir fügen den falschen Nachfolger zum Stack hinzu
+      if (b->if_true != false_node && b->if_false != false_node) {
+        stack.push(
+            b->if_true);  // Wir fügen den wahren Nachfolger zum Stack hinzu
+        stack.push(
+            b->if_false);  // Wir fügen den falschen Nachfolger zum Stack hinzu
+      } else if (b->if_true != false_node) {
+        stack.push(
+            b->if_true);  // Wir fügen nur den wahren Nachfolger zum Stack hinzu
+      } else if (b->if_false != false_node) {
+        stack.push(b->if_false);  // Wir fügen nur den falschen Nachfolger zum
+                                  // Stack hinzu
+      }
   
       b->to_delete = true;  // Wir markieren den aktuellen Knoten als gelöscht, um
                             // ihn nicht doppelt zu zählen
@@ -424,7 +439,7 @@
   
     // Wir überprüfen schließlich, ob die Dame in der letzten Spalte eine
     // niedrigere Position als die Dame in der ersten Spalte hat
-    if (board[size - 1] >= board[0])
+    if (board[size - 1] > board[0])
       return true;  // Es gibt eine vertikale Symmetrie
   
     // Wenn keine der Bedingungen erfüllt ist, gibt es keine Symmetrien
