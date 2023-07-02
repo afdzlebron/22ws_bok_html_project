@@ -1195,7 +1195,46 @@
     </pre>
 
 
+    Aufgabe 0:
 
+    Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
+    In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
+    Zwei Damen dÜrfen also niemals auf derselben Diagonale oder Linie sein. 
+    Das Problem besteht darin herauszufinden, wie viele Lösungen es gibt. Lösungen können
+    Symmetrien aufweisen, aber das interessiert uns erst einmal nicht.
+    In dem Folgende werden wir dieses Problem mit einer besonderen Darstellung lösen: BDDs (binary decision diagrams). 
+    Das ist ein Graph (im Moment: ein Baum) von Knoten. 
+    Jeder Knoten beschreibt eine Position einer Dame und stellt die Frage ¨Ist die Dame an der nächsten Stelle da?”. 
+    Jeder Knoten hat dann zwei Nachfolger : “wenn sie da ist” und “wenn sie nicht da ist”, daher auch der Name “If-Then-Else” fÜr jeden Knoten.
+    Es gibt zwei besondere Blätter: 0 (keine Lösung zum Damenproblem) und 1 (Lösung zum Damenproblem).
+    FÜr den Nachfolger einer Position stellen wir eine Dame in der ersten leeren Spalte (von links
+    nach rechts) und setzen sie dort ein oder setzen keine Dame an dieser Stelle.
+    Eine Position ist:
+     *voll* (full) wenn alle Damen auf dem Brett stehen;
+    *(in)korrekt* (valid), wenn (nicht) alle Regeln befolgt werden (also dass zwei Damen sind nehmen können)
+    Achtung Das leere Brett ist korrekt, aber nicht voll und deshalb auch keine Lösung zum Damenproblem.
+    
+    Auf dem `bild01.png` ist der Anfang von einem BDD gezeichnet. In jedem Knoten ist ein 4 × 4 Brett, bei dem d bedeutet, dass eine Dame dort ist, . bedeutet, dass dort keine Dame stehen kann. Die
+    vollen Pfeile bedeuten “Wenn die Dame dort ist” und die anderen “Wenn die Dame nicht dort
+    ist”.
+    Einer der Algorithmen, den wir hier implementieren wollen, ist folgender:
+    void baue_den_BDD_auf(die Größe n)
+    Stappel positionen_zu_bearbeiten := [keine_Damen] [Aufgabe 1]
+    BDD := leerer Graph [üB 8, Aufgabe 4]
+    Solange positionen_zu_bearbeiten nicht leer ist: [Aufgabe 1]
+    Position P := nimm eine Position aus positionen_zu_bearbeiten [Aufgabe 2]
+    for beide Nachfolger "ist da" und "ist nicht da" von der Position P
+    wenn der Nachfolger voll ist oder [Aufgabe 1]
+    der Nachfolger inkorrekt ist [Aufgabe 1]
+    setze 0 oder 1 als Nachfolger im BDD [üB 8, Aufgabe 4]
+    sonst
+    füge den Nachfolger im BDD und in positionen_zu_bearbeiten
+    verbinde den Nachfolger es mit der Position
+    
+    
+    Machen Sie nichts.
+    (Ende Aufgabe 0)
+    
       Ubungsblatt 10:
 
       Dieses Mal geht es darum, die Lösung zu verbessern, die in diese Dateien implementier wurde: 
