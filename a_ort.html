@@ -44,7 +44,7 @@
     <pre>
 
 
-      Aufgabe 0:
+      AUfgabe 0:
   
       Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
       In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -769,25 +769,28 @@
       
       void Board::vertical_flip() {
         // Diese Funktion soll das Brett vertikal spiegeln.
-      
         // Wir gehen davon aus, dass das Brett nicht leer ist und keine negativen
         // Werte enthält.
         assert(size > 0);
-      
         // Wir tauschen einfach die Spalten von links und rechts aus, bis wir die
         // Mitte erreichen.
         for (int i = 0; i < size / 2; ++i) {
           assert(board[i] >= 0);
           assert(board[size - i - 1] >= 0);
-          // Wir speichern die Position der Dame in der linken Spalte in einer
-          // temporären Variable.
-          int temp = board[i];
-          // Wir setzen die Position der Dame in der linken Spalte gleich der Position
-          // der Dame in der rechten Spalte.
-          board[i] = board[size - i - 1];
-          // Wir setzen die Position der Dame in der rechten Spalte gleich der
-          // temporären Variable.
-          board[size - i - 1] = temp;
+          // Wir suchen nach der ersten nicht-leeren Spalte von rechts.
+          // Wir brauchen nicht zu prüfen, ob die letzte Spalte leer ist, sondern nur
+          // ob die aktuelle Spalte von rechts nicht leer ist.
+          if (board[size - i - 1] > 0) {  // Wir entfernen die Bedingung auf last
+            // Wir speichern die Position der Dame in der linken Spalte in einer
+            // temporären Variable.
+            int temp = board[i];
+            // Wir setzen die Position der Dame in der linken Spalte gleich der
+            // Position der Dame in der rechten Spalte.
+            board[i] = board[size - i - 1];
+            // Wir setzen die Position der Dame in der rechten Spalte gleich der
+            // temporären Variable.
+            board[size - i - 1] = temp;
+          }
         }
       }
       
