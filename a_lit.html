@@ -255,7 +255,7 @@
     (Ende Aufgabe 13)
 
     </pre>
-    This is Makefile: 
+    This is Makefile:
     <pre>
       <code>
         CXX = g++
@@ -298,42 +298,44 @@
     <pre><code>
     #include "bdd.hpp"
     
-    #include <stack>  // um den Typ std::stack zu definieren
     #include <vector>
     
-    #include "node.hpp"  // um die Klasse Node zu deklarieren
     #include "stack.hpp"
     
     /* ÜB 10, Aufgabe 10*/
     Node *BDD::import_node(const Board &b, bool &already_exists) {
       Board a = b;
     
-      // Wir prüfen, ob die Position Symmetrien hat.
       const bool not_normalized = a.has_symmetries();
       Node *n;
     
+      // check if the position has symmetries
       if (not_normalized) {
-        // Wenn ja, normalisieren wir die Position und suchen nach einem
-        // existierenden Knoten mit derselben Position.
+        // normalize the position by applying horizontal and/or vertical flips
         a.symmetry_normalize();
-        Node temp(0, a);
-        auto it = nodes.find(&temp);
+        // search for the normalized position in the existing nodes
+        Node dummy(0, a);  // create a dummy node with the normalized position
+        auto it = nodes.find(&dummy);  // use the find method of std::set
         if (it != nodes.end()) {
-          // Wenn wir einen solchen Knoten finden, setzen wir already_exists auf
-          // true und geben ihn zurück.
+          // if the node is found, set the already_exists flag to true
           already_exists = true;
+          // return the existing node
           return *it;
+        } else {
+          // if the node is not found, set the already_exists flag to false
+          already_exists = false;
+          // create a new node with the normalized position and a fresh id
+          n = new Node(fresh_id, a);
         }
+      } else {
+        // if the position has no symmetries, set the already_exists flag to false
+        already_exists = false;
+        // create a new node with the original position and a fresh id
+        n = new Node(fresh_id, b);
       }
     
-      // Wenn die Position keine Symmetrien hat oder kein existierender Knoten
-      // gefunden wurde, erstellen wir einen neuen Knoten mit der Position und
-      // setzen already_exists auf false.
-      already_exists = false;
-      n = new Node(fresh_id, a);
-    
       ++fresh_id;
-      // NEW ÜB10: adapted to std::set
+      // insert the new node into the std::set of nodes
       nodes.insert(n);
     
       if (!root) root = n;
@@ -362,99 +364,35 @@
     }
     
     int BDD::count_true_path() const {
-      // Wir erstellen einen Stack, um die Knoten zu speichern, die wir noch
-      // besuchen müssen.
-      std::stack<Node *> stack;
-    
-      // Wir initialisieren die Anzahl der Pfade zum wahren Blatt mit 0.
+      /*ÜB9, Aufgabe 7*/
+      return 0;
+      Stack<Node *> queue;
       int path = 0;
     
-      // Wenn der BDD leer ist, geben wir 0 zurück.
-      if (!root)
-        return 0;
+      if (!root) return 0;
     
-      // Wir fügen den Wurzelknoten zum Stack hinzu.
-      stack.push(root);
+      queue.push(root);
     
-      // Wir bearbeiten den Stack, bis er leer ist.
-      while (!stack.empty()) {
-        // Wir nehmen den obersten Knoten vom Stack.
-        Node *b = stack.top();
-        stack.pop();
-    
-        // Wenn der Knoten das wahre Blatt ist, erhöhen wir die Anzahl der Pfade zum
-        // wahren Blatt um 1 und fahren fort.
+      while (!queue.empty()) {
+        Node *b = queue.top();
+        queue.pop();
         if (b == true_node) {
           ++path;
           continue;
         }
+        if (b == false_node) continue;
     
-        // Wenn der Knoten das falsche Blatt ist, fahren wir fort.
-        if (b == false_node)
-          continue;
-    
-        // Wir fügen beide Nachfolger des Knotens zum Stack hinzu.
-        stack.push(b->if_true);
-        stack.push(b->if_false);
+        queue.push(b->if_true);
+        queue.push(b->if_false);
       }
     
-      // Wir geben die Anzahl der Pfade zum wahren Blatt zurück.
       return path;
     }
     
-    
     int BDD::count_fundamental_true_path() const {
       /*NEW ÜB 10, Aufgabe 10*/
-      // Wir erstellen einen Stack, um die Knoten zu speichern, die wir noch
-      // besuchen müssen.
-      std::stack<Node *> stack;
-    
-      // Wir initialisieren die Anzahl der fundamentalen Lösungen mit 0.
-      int path = 0;
-    
-      // Wenn der BDD leer ist, geben wir 0 zurück.
-      if (!root) return 0;
-    
-      // Wir fügen den Wurzelknoten zum Stack hinzu.
-      stack.push(root);
-    
-      // Wir bearbeiten den Stack, bis er leer ist.
-      while (!stack.empty()) {
-        // Wir nehmen den obersten Knoten vom Stack.
-        Node *b = stack.top();
-        stack.pop();
-    
-        // Wenn der Knoten das wahre Blatt ist, erhöhen wir die Anzahl der
-        // fundamentalen Lösungen um 1 und fahren fort.
-        if (b == true_node) {
-          ++path;
-          continue;
-        }
-    
-        // Wenn der Knoten das falsche Blatt ist, fahren wir fort.
-        if (b == false_node) continue;
-    
-        // Wenn der Knoten bereits besucht wurde (to_delete ist true), fahren wir
-        // fort. Dies vermeidet, dass wir symmetrische Lösungen doppelt zählen.
-        if (b->to_delete) continue;
-    
-        // Wir markieren den Knoten als besucht, indem wir to_delete auf true
-        // setzen.
-        b->to_delete = true;
-    
-        // Wir fügen beide Nachfolger des Knotens zum Stack hinzu.
-        stack.push(b->if_true);
-        stack.push(b->if_false);
-      }
-    
-      // Wir setzen alle to_delete-Flags wieder auf false, um den BDD nicht zu
-      // verändern.
-      for (auto &n : nodes) {
-        n->to_delete = false;
-      }
-    
-      // Wir geben die Anzahl der fundamentalen Lösungen zurück.
-      return path;
+      /*TODO ÜB10, Aufgabe 12*/
+      return 0;
     }
     
     std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
@@ -494,30 +432,10 @@
       return stream;
     }
     
-    // We implement a recursive post-order traversal of the BDD
+    // We implement a recursive port-order traversal of the BDD
     bool BDD::is_removable(Node *b) {
       /*NEW ÜB 10, Aufgabe 11*/
-      // Wir überprüfen, ob der Knoten ein Blatt ist oder null ist.
-      if (b == true_node || b == false_node || b == nullptr)
-        return false;  // In diesem Fall ist er nicht löschbar.
-    
-      // Wir überprüfen rekursiv, ob die Nachfolger des Knotens löschbar sind.
-      bool if_true_removable = is_removable(b->if_true);
-      bool if_false_removable = is_removable(b->if_false);
-    
-      // Wenn ein Nachfolger löschbar ist, ersetzen wir ihn durch den falschen
-      // Knoten.
-      if (if_true_removable) b->if_true = false_node;
-      if (if_false_removable) b->if_false = false_node;
-    
-      // Wenn beide Nachfolger löschbar sind, markieren wir den Knoten als löschbar
-      // und geben true zurück.
-      if (if_true_removable && if_false_removable) {
-        b->to_delete = true;
-        return true;
-      }
-    
-      // Sonst geben wir false zurück.
+      /*TODO ÜB 10, Aufgabe 11*/
       return false;
     }
     
@@ -525,25 +443,9 @@
     // removed
     void BDD::normalize_bdd() {
       /*NEW ÜB 10, Aufgabe 11*/
-      // Wir rufen die rekursive Funktion is_removable auf dem Wurzelknoten auf.
-      bool root_removable = is_removable(root);
-    
-      // Wenn der Wurzelknoten löschbar ist, setzen wir ihn auf den falschen Knoten.
-      if (root_removable) root = false_node;
-    
-      // Wir iterieren über alle Knoten im BDD und löschen diejenigen, die als
-      // löschbar markiert sind. Dabei passen wir auch das Set von Knoten an.
-      for (auto it = nodes.begin(); it != nodes.end();) {
-        Node *n = *it;
-        if (n->to_delete) {
-          delete n;
-          it = nodes.erase(it);
-        } else {
-          ++it;
-        }
-      }
-    }
-    </code></pre>
+      /*TODO ÜB 10, Aufgabe 11*/
+      return;
+    }</code></pre>
     Here is bddMain.cpp:
     <pre><code>
     #include "bdd.hpp"
@@ -697,201 +599,131 @@
     }
     
     bool Board::has_symmetries() const {
-      /*NEW ÜB 10, Aufgabe 10*/
-      // Wir überprüfen, ob die Position die beiden Symmetrien (A) und (B) erfüllt.
-      // (A): Die Dame steht immer oben in der ersten Hälfte der Spalte.
-      // (B): Die Dame in der letzten Spalte hat immer eine niedrigere Position als
-      // die Dame in der ersten Spalte.
+      /*TODO ÜB 10, Aufgabe 10*/
+      // return false;
     
-      // Wir iterieren über alle Spalten von links nach rechts.
+      // check if the board is empty or has only one queen
+      int first = -1;
+      int last = -1;
       for (int i = 0; i < size; ++i) {
-        // Wir holen den Wert der Spalte.
-        int value = board[i];
-    
-        // Wenn der Wert negativ ist, bedeutet das, dass es keine Dame in dieser
-        // Spalte gibt. Wir fahren fort.
-        if (value < 0) continue;
-    
-        // Wenn der Wert positiv ist, bedeutet das, dass es eine Dame an dieser
-        // Position gibt. Wir überprüfen die Symmetrien.
-    
-        // Für Symmetrie (A) müssen wir sicherstellen, dass die Dame in der oberen
-        // Hälfte der Spalte steht. Das heißt, dass der Wert kleiner oder gleich
-        // size / 2 sein muss.
-        if (value > size / 2) return false;  // Symmetrie (A) ist verletzt.
-    
-        // Für Symmetrie (B) müssen wir sicherstellen, dass die Dame in der letzten
-        // Spalte eine niedrigere Position als die Dame in der ersten Spalte hat.
-        // Das heißt, dass wenn i == size - 1 ist, dann muss value < board[0] sein.
-        if (i == size - 1 && value >= board[0])
-          return false;  // Symmetrie (B) ist verletzt.
+        if (board[i] > 0) {
+          if (first == -1) {
+            first = i;
+          }
+          last = i;
+        }
+      }
+      if (first == -1 || first == last) {
+        return false;
       }
     
-      // Wenn wir alle Spalten überprüft haben und keine Symmetrie verletzt wurde,
-      // geben wir true zurück.
-      return true;
+      // check if the queen in the first column is in the upper half of the board
+      if (board[first] > size / 2) {
+        return true;  // horizontal symmetry
+      }
+    
+      // check if the queen in the last column has a lower position than the queen
+      // in the first column
+      if (board[last] >= board[first]) {
+        return true;  // vertical symmetry
+      }
+    
+      return false;  // no symmetries
     }
     
     void Board::horizontal_flip() {
-      // Wir gehen davon aus, dass das Brett nicht leer ist und keine negativen
-      // Werte enthält.
-      assert(size > 0);
+      /*TODO ÜB 10, Aufgabe 10*/
+      // return;
     
+      // iterate over each column of the board from left to right
       for (int i = 0; i < size; ++i) {
-        assert(board[i] >= 0);
-    
-        // Wenn die Spalte leer ist, überspringen wir sie.
-        if (board[i] == 0) continue;
-    
-        // Wir spiegeln die Position der Dame um die Mitte des Bretts.
-        board[i] = size + 1 - board[i];
-    
-        /* Alternativ könnte man auch einfach das Array umdrehen:
-    
-        int temp = board[i];
-        board[i] = board[size - i - 1];
-        board[size - i - 1] = temp;
-    
-        Aber das wäre weniger effizient, da man mehr Zuweisungen braucht. */
+        // compute the symmetric position of a queen in a column as size - board[i]
+        // + 1
+        int sym = size - board[i] + 1;
+        // swap the position of the queen in a column with its symmetric position
+        std::swap(board[i], sym);
       }
     }
     
     void Board::vertical_flip() {
-      // Wir gehen davon aus, dass das Brett nicht leer ist und keine negativen
-      // Werte enthält.
-      assert(size > 0);
+      /*TODO ÜB 10, Aufgabe 10*/
+      // assert(false);
     
-      // Wir tauschen einfach die Spalten von links und rechts aus, bis wir die
-      // Mitte erreichen.
+      // iterate over each row of the board from top to bottom
       for (int i = 0; i < size / 2; ++i) {
-        assert(board[i] >= 0);
-        assert(board[size - i - 1] >= 0);
-    
-        // Wir suchen nach der ersten nicht-leeren Spalte von rechts.
-        // Wir brauchen nicht zu prüfen, ob die letzte Spalte leer ist, sondern nur
-        // ob die aktuelle Spalte von rechts nicht leer ist.
-        if (board[size - i - 1] > 0) {  // Wir entfernen die Bedingung auf last
-    
-          // Wir speichern die Position der Dame in der linken Spalte in einer
-          // temporären Variable.
-          int temp = board[i];
-    
-          // Wir setzen die Position der Dame in der linken Spalte gleich der
-          // Position der Dame in der rechten Spalte.
-          board[i] = board[size - i - 1];
-    
-          // Wir setzen die Position der Dame in der rechten Spalte gleich der
-          // temporären Variable.
-          board[size - i - 1] = temp;
-        }
+        // compute the symmetric position of a queen in a row as size - i + 1
+        int sym = size - i + 1;
+        // swap the position of the queen in a row with its symmetric position
+        std::swap(board[i], board[sym]);
       }
     }
     
     void Board::symmetry_normalize() {
-      // Wir gehen davon aus, dass das Brett nicht leer ist und keine negativen
-      // Werte enthält.
-      assert(size > 0);
+      /*TODO ÜB 10, Aufgabe 10*/
+      // assert(false);
     
-      // Wir prüfen zuerst die Symmetrie (A)
-      // Dazu iterieren wir über die Spalten von links nach rechts und schauen, ob
-      // die Dame in der oberen Hälfte steht
-      bool need_horizontal_flip =
-          false;  // Diese Variable wird auf true gesetzt, wenn wir eine horizontale
-                  // Spiegelung brauchen
-    
-      for (int i = 0; i < size; ++i) {
-        assert(board[i] >= 0);
-    
-        // Wenn die Spalte leer ist, überspringen wir sie
-        if (board[i] == 0) continue;
-    
-        // Wenn die Dame in der unteren Hälfte steht, brauchen wir eine horizontale
-        // Spiegelung.
-        if (board[i] > size / 2) {
-          need_horizontal_flip = true;
-          break;
-        }
-    
-        // Wenn die Dame genau in der Mitte steht und die Größe ungerade ist,
-        // brauchen wir auch eine horizontale Spiegelung
-        if (board[i] == size / 2 + 1 && size % 2 == 1) {
-          need_horizontal_flip = true;
-          break;
-        }
-      }
-    
-      // Wir führen die horizontale Spiegelung durch, falls nötig
-      if (need_horizontal_flip) {
+      // check if there is a horizontal symmetry and flip the board horizontally if
+      // needed
+      if (board[0] > size / 2) {
         horizontal_flip();
       }
     
-      // Wir prüfen nun die Symmetrie (B)
-      // Dazu vergleichen wir die Positionen der Damen in der ersten und letzten
-      // Spalte.
-    
-      int first =
-          -1;  // Die Position der Dame in der ersten Spalte oder -1, wenn leer
-      int last =
-          -1;  // Die Position der Dame in der letzten Spalte oder -1, wenn leer.
-    
-      for (int i = 0; i < size; ++i) {
-        // Wir suchen nach der ersten nicht-leeren Spalte von links
-        if (first == -1 && board[i] > 0) {
-          first = board[i];
-        }
-    
-        // Wir suchen nach der ersten nicht-leeren Spalte von rechts
-        if (last == -1 && board[size - i - 1] > 0) {
-          last = board[size - i - 1];
-        }
-    
-        // Wenn wir beide gefunden haben, brechen wir die Schleife ab
-        if (first != -1 && last != -1) break;
-      }
-    
-      // Wenn beide Spalten leer sind oder nur eine Spalte leer ist, gibt es keine
-      // Symmetrie (B)
-      if (first == -1 || last == -1) return;
-    
-      // Wenn die Dame in der letzten Spalte eine höhere Position hat als die Dame
-      // in der ersten Spalte, brauchen wir eine vertikale Spiegelung
-      if (last > first) {
+      // check if there is a vertical symmetry and flip the board vertically if
+      // needed
+      if (board[size - 1] >= board[0]) {
         vertical_flip();
       }
     }
     
     bool Board::operator<(const Board &n) const {
-      assert(size == n.size);
+      /*TODO ÜB 10, Aufgabe 9*/
+      // return false;
     
-      for (int i = size - 1; i >= 0; --i) {
-        if (board[i] < n.board[i]) return true;
-        if (board[i] > n.board[i]) return false;
+      // compare the sizes of the boards first
+      if (size < n.size) {
+        return true;
+      }
+      if (size > n.size) {
+        return false;
       }
     
+      // compare the positions of the queens lexicographically from left to right
+      for (int i = 0; i < size; ++i) {
+        if (board[i] < n.board[i]) {
+          return true;
+        }
+        if (board[i] > n.board[i]) {
+          return false;
+        }
+      }
+    
+      // the boards are equal
       return false;
     }
     
     bool Board::operator<=(const Board &n) const {
-      /*NEW ÜB 10, Aufgabe 9*/
-      // Wir überprüfen zuerst, ob die Größe der beiden Positionen gleich ist.
-      assert(size == n.size);
+      /*TODO ÜB 10, Aufgabe 9*/
+      // return false;
     
-      // Wir vergleichen die Werte der beiden Positionen lexicographisch von links
-      // nach rechts. Negative Werte werden als negative Zahlen behandelt.
-      for (int i = 0; i < size; ++i) {
-        int value1 = board[i];
-        int value2 = n.board[i];
-    
-        // Wenn value1 kleiner als value2 ist, geben wir true zurück.
-        if (value1 < value2) return true;
-    
-        // Wenn value1 größer als value2 ist, geben wir false zurück.
-        if (value1 > value2) return false;
-    
-        // Wenn value1 gleich value2 ist, fahren wir mit der nächsten Spalte fort.
+      // compare the sizes of the boards first
+      if (size < n.size) {
+        return true;
+      }
+      if (size > n.size) {
+        return false;
       }
     
-      // Wenn alle Werte gleich sind, geben wir true zurück.
+      // compare the positions of the queens lexicographically from left to right
+      for (int i = 0; i < size; ++i) {
+        if (board[i] < n.board[i]) {
+          return true;
+        }
+        if (board[i] > n.board[i]) {
+          return false;
+        }
+      }
+    
+      // the boards are equal
       return true;
     }
     </code></pre>
@@ -1105,17 +937,21 @@
                                       std::stack<Node *> &stack) {
       /*ÜB10, Aufgabe 6, optional*/
       Board b = parent->get_configuration();
+    
       if (!b.has_next(direction)) {
         bdd.connect_false(parent, direction);
         return;
       }
     
       b.next(direction);
+    
       const bool valid = b.is_valid();
+    
       if (!valid) {
         bdd.connect_false(parent, direction);
         return;
       }
+    
       if (b.is_full()) {
         assert(valid);
         bdd.connect_true(parent, direction);
@@ -1123,56 +959,61 @@
       } else {
         bool already_exists = false;
         Node *child = bdd.import_node(b, already_exists);
-        if (!already_exists) stack.push(child);
+    
+        // NEW ÜB10: adapted to std::set
+        // check if the node already exists after normalization
+        if (already_exists) {
+          // do nothing if the node already exists
+          return;
+        }
+    
+        stack.push(child);
         bdd.connect(parent, child, direction);
       }
+    
       return;
     }
     
     void NQueens::construct_bdd() {
-      // Wir beginnen mit einem leeren Brett der gegebenen Größe.
+      /*ÜB10, Aufgabe 6*/
       Board b(size);
-    
-      // Wir erstellen einen Stack, um die Positionen zu speichern, die wir noch
-      // bearbeiten müssen.
-      std::stack<Node *> stack;
-    
-      // Wir importieren das leere Brett in den BDD und fügen es zum Stack hinzu.
+      std::stack<Node *>
+          stack;  // specify the type of the element stored in the stack
       bool already_exists = false;
       Node *n = bdd.import_node(b, already_exists);
       stack.push(n);
-    
-      // Wir setzen ein Limit für die Anzahl der besuchten Knoten, bevor wir den BDD
-      // reduzieren. Dieses Limit wird jedes Mal verdoppelt, wenn es erreicht wird.
       int next_limit = size;
       int visited_nodes = 1;
-    
-      // Wir bearbeiten den Stack, bis er leer ist.
       while (!stack.empty()) {
-        // Wir nehmen die oberste Position vom Stack.
         Node *n = stack.top();
         stack.pop();
-    
-        // Wir prüfen beide Nachfolger der Position: mit oder ohne Dame an der
-        // nächsten freien Spalte.
         check_and_add_child(n, false, stack);
         check_and_add_child(n, true, stack);
-    
-        // Wir zählen die Anzahl der besuchten Knoten.
         visited_nodes += 2;
-    
-        // Wenn wir das Limit erreicht haben, reduzieren wir den BDD, um unnötige
-        // Pfade zu entfernen. Dies soll die Speicherauslastung und die Laufzeit
-        // verbessern.
         if (visited_nodes >= next_limit) {
+          // NEW ÜB10
+          /* ÜB 10, Aufgabe 11*/
+          // This is new compared to the ÜB9
+          // we reduce the BDD, in increasingly large limits
+          // I have not tried to optimize the numbers, but it seems to work more or
+          // less
+          //
+          // ÜB10, Aufgabe 11
           next_limit *= 2;
           bdd.normalize_bdd();
         }
       }
     
-      // Zum Schluss reduzieren wir den BDD noch einmal, um sicherzustellen, dass er
-      // minimal ist.
       bdd.normalize_bdd();
+    
+      /*
+      std::ofstream myfile;
+      myfile.open("small_test_bdd_symmetry.txt");
+      if (myfile.is_open()) {
+        myfile << bdd;
+        myfile.close();
+      }
+      */
     }
     </code></pre>
     Here is nqueensMain.cpp:
@@ -1680,8 +1521,8 @@
     
     #endif
     </code></pre>
-    
-      
+
+
   </main>
 
 </body>
