@@ -35,7 +35,7 @@
     <pre>
 
 
-    AUFGAbe 0:
+    AUFGABe 0:
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -390,10 +390,30 @@ std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
   return stream;
 }
 
-// We implement a recursive port-order traversal of the BDD
+// We implement a recursive post-order traversal of the BDD
 bool BDD::is_removable(Node *b) {
   /*NEW ÜB 10, Aufgabe 11*/
-  /*TODO ÜB 10, Aufgabe 11*/
+  // Wir überprüfen, ob der Knoten ein Blatt ist oder null ist.
+  if (b == true_node || b == false_node || b == nullptr)
+    return false;  // In diesem Fall ist er nicht löschbar.
+
+  // Wir überprüfen rekursiv, ob die Nachfolger des Knotens löschbar sind.
+  bool if_true_removable = is_removable(b->if_true);
+  bool if_false_removable = is_removable(b->if_false);
+
+  // Wenn ein Nachfolger löschbar ist, ersetzen wir ihn durch den falschen
+  // Knoten.
+  if (if_true_removable) b->if_true = false_node;
+  if (if_false_removable) b->if_false = false_node;
+
+  // Wenn beide Nachfolger löschbar sind, markieren wir den Knoten als löschbar
+  // und geben true zurück.
+  if (if_true_removable && if_false_removable) {
+    b->to_delete = true;
+    return true;
+  }
+
+  // Sonst geben wir false zurück.
   return false;
 }
 
@@ -401,9 +421,25 @@ bool BDD::is_removable(Node *b) {
 // removed
 void BDD::normalize_bdd() {
   /*NEW ÜB 10, Aufgabe 11*/
-  /*TODO ÜB 10, Aufgabe 11*/
-  return;
-}</code></pre>
+  // Wir rufen die rekursive Funktion is_removable auf dem Wurzelknoten auf.
+  bool root_removable = is_removable(root);
+
+  // Wenn der Wurzelknoten löschbar ist, setzen wir ihn auf den falschen Knoten.
+  if (root_removable) root = false_node;
+
+  // Wir iterieren über alle Knoten im BDD und löschen diejenigen, die als
+  // löschbar markiert sind. Dabei passen wir auch das Set von Knoten an.
+  for (auto it = nodes.begin(); it != nodes.end();) {
+    Node *n = *it;
+    if (n->to_delete) {
+      delete n;
+      it = nodes.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+</code></pre>
     Here is bddMain.cpp:
     <pre><code>
 #include "bdd.hpp"
