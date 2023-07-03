@@ -988,49 +988,51 @@ void NQueens::check_and_add_child(Node *parent, bool direction,
 }
 
 void NQueens::construct_bdd() {
-  /*ÜB10, Aufgabe 6*/
+  // Wir beginnen mit einem leeren Brett der gegebenen Größe.
   Board b(size);
+  
+  // Wir erstellen einen Stack, um die Positionen zu speichern, die wir noch
+  // bearbeiten müssen.
   std::stack<Node *> stack;
-
+  
+  // Wir importieren das leere Brett in den BDD und fügen es zum Stack hinzu.
   bool already_exists = false;
   Node *n = bdd.import_node(b, already_exists);
   stack.push(n);
-
+  
+  // Wir setzen ein Limit für die Anzahl der besuchten Knoten, bevor wir den BDD
+  // reduzieren. Dieses Limit wird jedes Mal verdoppelt, wenn es erreicht wird.
   int next_limit = size;
   int visited_nodes = 1;
-
+  
+  // Wir bearbeiten den Stack, bis er leer ist.
   while (!stack.empty()) {
+    // Wir nehmen die oberste Position vom Stack.
     Node *n = stack.top();
     stack.pop();
-
+    
+    // Wir prüfen beide Nachfolger der Position: mit oder ohne Dame an der
+    // nächsten freien Spalte.
     check_and_add_child(n, false, stack);
     check_and_add_child(n, true, stack);
+    
+    // Wir zählen die Anzahl der besuchten Knoten.
     visited_nodes += 2;
-
+    
+    // Wenn wir das Limit erreicht haben, reduzieren wir den BDD, um unnötige
+    // Pfade zu entfernen. Dies soll die Speicherauslastung und die Laufzeit
+    // verbessern.
     if (visited_nodes >= next_limit) {
-      // NEW ÜB10
-      /* ÜB 10, Aufgabe 11*/
-      // This is new compared to the ÜB9
-      // we reduce the BDD, in increasingly large limits.
-      // I have not tried to optimize the numbers, but it seems to work more or
-      // less
-      //
-      // ÜB10, Aufgabe 11
       next_limit *= 2;
       bdd.normalize_bdd();
     }
   }
-
+  
+  // Zum Schluss reduzieren wir den BDD noch einmal, um sicherzustellen, dass er
+  // minimal ist.
   bdd.normalize_bdd();
-/*
-  std::ofstream myfile;
-  myfile.open("small_test_bdd_symmetry.txt");
-  if (myfile.is_open()) {
-    myfile << bdd;
-    myfile.close();
-  }
-  */
 }
+
 </code></pre>
 Here is nqueensMain.cpp:
 <pre><code>
