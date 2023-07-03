@@ -257,36 +257,46 @@
     </pre>
 
     Here is bdd.cpp:
-<pre><code>
+    <pre><code>
+#include "bdd.hpp"
+
 #include <vector>
 
-#include "bdd.hpp"
 #include "stack.hpp"
 
 /* ÜB 10, Aufgabe 10*/
 Node *BDD::import_node(const Board &b, bool &already_exists) {
   Board a = b;
 
+  // Wir prüfen, ob die Position Symmetrien hat.
   const bool not_normalized = a.has_symmetries();
   Node *n;
 
-  const bool ub10_aufgabe10_schon_implementiert = false;
-  if (ub10_aufgabe10_schon_implementiert && not_normalized) {
-    /*NEW ÜB 10, Aufgabe 10*/
-    /*TODO ÜB 10, Aufgabe 10*/
-    /*nicht vergessen ub10_aufgabe10_schon_implementiert zu löschen!*/
-    assert(false);
-  } else {
-    already_exists = false;
-    n = new Node(fresh_id, a);
+  if (not_normalized) {
+    // Wenn ja, normalisieren wir die Position und suchen nach einem
+    // existierenden Knoten mit derselben Position.
+    a.symmetry_normalize();
+    Node temp(0, a);
+    auto it = nodes.find(&temp);
+    if (it != nodes.end()) {
+      // Wenn wir einen solchen Knoten finden, setzen wir already_exists auf
+      // true und geben ihn zurück.
+      already_exists = true;
+      return *it;
+    }
   }
+
+  // Wenn die Position keine Symmetrien hat oder kein existierender Knoten
+  // gefunden wurde, erstellen wir einen neuen Knoten mit der Position und
+  // setzen already_exists auf false.
+  already_exists = false;
+  n = new Node(fresh_id, a);
 
   ++fresh_id;
   // NEW ÜB10: adapted to std::set
   nodes.insert(n);
 
-  if (!root)
-    root = n;
+  if (!root) root = n;
   return n;
 }
 
@@ -317,8 +327,7 @@ int BDD::count_true_path() const {
   Stack<Node *> queue;
   int path = 0;
 
-  if (!root)
-    return 0;
+  if (!root) return 0;
 
   queue.push(root);
 
@@ -329,8 +338,7 @@ int BDD::count_true_path() const {
       ++path;
       continue;
     }
-    if (b == false_node)
-      continue;
+    if (b == false_node) continue;
 
     queue.push(b->if_true);
     queue.push(b->if_false);
@@ -347,8 +355,7 @@ int BDD::count_fundamental_true_path() const {
 
 std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
   std::vector<Node *> queue;
-  if (bdd.root)
-    queue.push_back(bdd.root);
+  if (bdd.root) queue.push_back(bdd.root);
   const std::string true_name("true");
   const std::string false_name("false");
 
@@ -390,19 +397,20 @@ bool BDD::is_removable(Node *b) {
   return false;
 }
 
-// remove useless parts of the entire BDD, by checking if the root should be removed
+// remove useless parts of the entire BDD, by checking if the root should be
+// removed
 void BDD::normalize_bdd() {
   /*NEW ÜB 10, Aufgabe 11*/
   /*TODO ÜB 10, Aufgabe 11*/
   return;
 }</code></pre>
-Here is bddMain.cpp:
-<pre><code>
+    Here is bddMain.cpp:
+    <pre><code>
 #include "bdd.hpp"
 
 int main() { BDD bdd; }</code></pre>
-Here is bddTest.cpp:
-<pre><code>
+    Here is bddTest.cpp:
+    <pre><code>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -456,8 +464,8 @@ int main() {
   return RUN_ALL_TESTS();
 }
 </code></pre>
-Here is board.cpp:
-<pre><code>
+    Here is board.cpp:
+    <pre><code>
 #include "board.hpp"
 
 #include <assert.h>
@@ -752,8 +760,8 @@ bool Board::operator<=(const Board &n) const {
   return true;
 }
 </code></pre>
-Here is boardTest.cpp:
-<pre><code>
+    Here is boardTest.cpp:
+    <pre><code>
 #include <gtest/gtest.h>
 
 #include "board.hpp"
@@ -942,8 +950,8 @@ int main() {
   return RUN_ALL_TESTS();
 }
 </code></pre>
-Here is node.cpp:
-<pre><code>
+    Here is node.cpp:
+    <pre><code>
 #include "node.hpp"
 
 std::ostream &operator<<(std::ostream &stream, const Node &node) {
@@ -951,12 +959,12 @@ std::ostream &operator<<(std::ostream &stream, const Node &node) {
   return stream;
 }
 </code></pre>
-Here is nqueens.cpp:
-<pre><code>
+    Here is nqueens.cpp:
+    <pre><code>
+#include "nqueens.hpp"
+
 #include <fstream>
 #include <stack>
-
-#include "nqueens.hpp"
 
 void NQueens::check_and_add_child(Node *parent, bool direction,
                                   std::stack<Node *> &stack) {
@@ -980,8 +988,7 @@ void NQueens::check_and_add_child(Node *parent, bool direction,
   } else {
     bool already_exists = false;
     Node *child = bdd.import_node(b, already_exists);
-    if (!already_exists)
-      stack.push(child);
+    if (!already_exists) stack.push(child);
     bdd.connect(parent, child, direction);
   }
   return;
@@ -990,35 +997,35 @@ void NQueens::check_and_add_child(Node *parent, bool direction,
 void NQueens::construct_bdd() {
   // Wir beginnen mit einem leeren Brett der gegebenen Größe.
   Board b(size);
-  
+
   // Wir erstellen einen Stack, um die Positionen zu speichern, die wir noch
   // bearbeiten müssen.
   std::stack<Node *> stack;
-  
+
   // Wir importieren das leere Brett in den BDD und fügen es zum Stack hinzu.
   bool already_exists = false;
   Node *n = bdd.import_node(b, already_exists);
   stack.push(n);
-  
+
   // Wir setzen ein Limit für die Anzahl der besuchten Knoten, bevor wir den BDD
   // reduzieren. Dieses Limit wird jedes Mal verdoppelt, wenn es erreicht wird.
   int next_limit = size;
   int visited_nodes = 1;
-  
+
   // Wir bearbeiten den Stack, bis er leer ist.
   while (!stack.empty()) {
     // Wir nehmen die oberste Position vom Stack.
     Node *n = stack.top();
     stack.pop();
-    
+
     // Wir prüfen beide Nachfolger der Position: mit oder ohne Dame an der
     // nächsten freien Spalte.
     check_and_add_child(n, false, stack);
     check_and_add_child(n, true, stack);
-    
+
     // Wir zählen die Anzahl der besuchten Knoten.
     visited_nodes += 2;
-    
+
     // Wenn wir das Limit erreicht haben, reduzieren wir den BDD, um unnötige
     // Pfade zu entfernen. Dies soll die Speicherauslastung und die Laufzeit
     // verbessern.
@@ -1027,15 +1034,14 @@ void NQueens::construct_bdd() {
       bdd.normalize_bdd();
     }
   }
-  
+
   // Zum Schluss reduzieren wir den BDD noch einmal, um sicherzustellen, dass er
   // minimal ist.
   bdd.normalize_bdd();
 }
-
 </code></pre>
-Here is nqueensMain.cpp:
-<pre><code>
+    Here is nqueensMain.cpp:
+    <pre><code>
 #include "nqueens.hpp"
 
 int main() {
@@ -1043,8 +1049,8 @@ int main() {
   std::cout << queens.count_solutions();
 }
 </code></pre>
-Here is nqueensTest.cpp:
-<pre><code>
+    Here is nqueensTest.cpp:
+    <pre><code>
 #include <gtest/gtest.h>
 
 #include "nqueens.hpp"
@@ -1079,8 +1085,8 @@ int main() {
   return RUN_ALL_TESTS();
 }
 </code></pre>
-Here is stack.cpp:
-<pre><code>
+    Here is stack.cpp:
+    <pre><code>
 #include "stack.hpp"
 #include "board.hpp"
 #include "node.hpp"
@@ -1121,8 +1127,8 @@ template <typename T> bool Stack<T>::empty() const { return size == 0; }
 template class Stack<Node *>;
 template class Stack<Board *>;
 template class Stack<Board>;</code></pre>
-Here is stackTest.cpp:
-<pre><code>
+    Here is stackTest.cpp:
+    <pre><code>
 #include <gtest/gtest.h>
 
 #include "board.hpp"
@@ -1162,8 +1168,8 @@ int main() {
   return RUN_ALL_TESTS();
 }
 </code></pre>
-Here is bdd.hpp:
-<pre><code>
+    Here is bdd.hpp:
+    <pre><code>
 #ifndef BLATT_BDD_BDD
 #define BLATT_BDD_BDD
 
@@ -1272,8 +1278,8 @@ private:
 };
 
 #endif</code></pre>
-Here is board.hpp:
-<pre><code>
+    Here is board.hpp:
+    <pre><code>
 #ifndef BLATT_BDD_BOARD
 #define BLATT_BDD_BOARD
 
@@ -1400,8 +1406,8 @@ private:
 
 #endif
 </code></pre>
-Here is node.hpp:
-<pre><code>
+    Here is node.hpp:
+    <pre><code>
 #ifndef BLATT_BDD_NODE
 #define BLATT_BDD_NODE
 
@@ -1459,8 +1465,8 @@ public:
 };
 
 #endif</code></pre>
-Here is nqueens.hpp:
-<pre><code>
+    Here is nqueens.hpp:
+    <pre><code>
 #ifndef BLATT_BDD_NQUEENS
 #define BLATT_BDD_NQUEENS
 
@@ -1495,8 +1501,8 @@ private:
   BDD bdd;
 };
 #endif</code></pre>
-Here is stack.hpp:
-<pre><code>
+    Here is stack.hpp:
+    <pre><code>
 #ifndef BLATT_BDD_STACK
 #define BLATT_BDD_STACK
 
