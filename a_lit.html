@@ -35,7 +35,7 @@
     <pre>
 
 
-    AufGabE 0::
+    auFGaBe 0::
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -697,10 +697,12 @@
     }
     
     bool Board::has_symmetries() const {
-      /*TODO ÜB 10, Aufgabe 10*/
-      // return false;
-    
-      // check if the board is empty or has only one queen
+      /*NEW ÜB 10, Aufgabe 10*/
+      // Wir überprüfen, ob die Position die beiden Symmetrien (A) und (B) erfüllt
+      // (A): Die Dame steht immer oben in der ersten Hälfte der Spalte[6].
+      // (B): Die Dame in der letzten Spalte hat immer eine niedrigere Position als
+      // die Dame in der ersten Spalte
+      // Wir iterieren über alle Spalten von links nach rechts
       int first = -1;
       int last = -1;
       for (int i = 0; i < size; ++i) {
@@ -757,19 +759,64 @@
     }
     
     void Board::symmetry_normalize() {
-      /*TODO ÜB 10, Aufgabe 10*/
-      // assert(false);
+      // Wir gehen davon aus, dass das Brett nicht leer ist und keine negativen
+      // Werte enthält.
+      assert(size > 0);
     
-      // check if there is a horizontal symmetry and flip the board horizontally if
-      // needed
-      if (board[0] > size / 2) {
-        horizontal_flip();
+      // Wir prüfen zuerst die Symmetrie (B) // Hier haben wir die Reihenfolge
+      // geändert Dazu vergleichen wir die Positionen der Damen in der ersten und
+      // letzten Spalte.
+      int first =
+          -1;  // Die Position der Dame in der ersten Spalte oder -1, wenn leer
+      int last =
+          -1;  // Die Position der Dame in der letzten Spalte oder -1, wenn leer
+      for (int i = 0; i < size; ++i) {
+        // Wir suchen nach der ersten nicht-leeren Spalte von links
+        if (first == -1 && board[i] > 0) {
+          first = board[i];
+        }
+        // Wir suchen nach der ersten nicht-leeren Spalte von rechts
+        if (last == -1 && board[size - i - 1] > 0) {
+          last = board[size - i - 1];
+        }
+        // Wenn wir beide gefunden haben, brechen wir die Schleife ab
+        if (first != -1 && last != -1) break;
+      }
+      // Wenn beide Spalten leer sind oder nur eine Spalte leer ist, gibt es keine
+      // Symmetrie (B)
+      if (first == -1 || last == -1) return;
+      // Wenn die Dame in der letzten Spalte eine höhere Position hat als die Dame
+      // in der ersten Spalte, brauchen wir eine vertikale Spiegelung
+      if (last > first) {
+        vertical_flip();
       }
     
-      // check if there is a vertical symmetry and flip the board vertically if
-      // needed
-      if (board[size - 1] >= board[0]) {
-        vertical_flip();
+      // Wir prüfen nun die Symmetrie (A) // Hier haben wir die Reihenfolge geändert
+      // Dazu iterieren wir über die Spalten von links nach rechts und schauen, ob
+      // die Dame in der oberen Hälfte steht
+      bool need_horizontal_flip =
+          false;  // Diese Variable wird auf true gesetzt, wenn wir eine horizontale
+                  // Spiegelung brauchen
+      for (int i = 0; i < size; ++i) {
+        assert(board[i] >= 0);
+        // Wenn die Spalte leer ist, überspringen wir sie
+        if (board[i] == 0) continue;
+        // Wenn die Dame in der unteren Hälfte steht, brauchen wir eine horizontale
+        // Spiegelung.
+        if (board[i] > size / 2) {
+          need_horizontal_flip = true;
+          break;
+        }
+        // Wenn die Dame genau in der Mitte steht und die Größe ungerade ist,
+        // brauchen wir auch eine horizontale Spiegelung
+        if (board[i] == size / 2 + 1 && size % 2 == 1) {
+          need_horizontal_flip = true;
+          break;
+        }
+      }
+      // Wir führen die horizontale Spiegelung durch, falls nötig
+      if (need_horizontal_flip) {
+        horizontal_flip();
       }
     }
     
@@ -1619,7 +1666,7 @@
     
     #endif
     </code></pre>
-
+    
   </main>
 
 </body>
