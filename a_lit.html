@@ -76,183 +76,183 @@
     (Ende Aufgabe 0)
     
 
-      Dieses Mal geht es darum, die Lösung zu verbessern, die in diese Dateien implementier wurde: 
-      `bdd.cpp`,`bdd.hpp`,`bddMain.cpp`,`bddTest.cpp`,`board.cpp`,`board.hpp`,`boardTest.cpp`,`node.cpp`,`node.hpp`,`nqueens.cpp`,`nqueens.hpp`,`nqueensMain.cpp`,`nqueensTest.cpp`,`stack.cpp`,`stack.hpp`,`stackTest.cpp`,
-      Suchen Sie in den Dateien nach `NEW` um die veränderungen zu sehen (und `TODO` um zu sehen wo Sie was implementieren müssen).
-      Hinweis 1: 
-      Die Aufgaben 9 und 10 gehören zusammen, aber die anderen sind unabhänging. 
-      Sie können die Implementierung in beliebiger Reihenfolge machen.
-      Hinweis 2: 
-      Das Damenproblem mit Größe 4 und die dot-Graphen sind sehr nützlich um zu schauen,ob auch alles abgefangen werden kann.
-      
-      
-      Aufgabe 9: 
-      ```
-      (board.[ch]pp)
-      Zuerst brauchen wir ein Ordnung über Positionen: kürzer Bretter sind kürzer als lange Bretter.
-      Wenn die Länge gleich ist, dann vergleichen Bretter wie im Wörterbuch (lexicographische Ordnung) von links nacht rechts (kleiner Zahlen bedeuten kleiner, wenn gleich wird sich das nächste Element angeschaut). 
-      Zum Beispiel ist `[2, 4]` kleiner als `[2, 5]` und `[2, 200]`.
-      
-      Implementieren Sie in der Datei `board.hpp` die Ordnungsoperatoren `<` und `<=`.
-      Als nächstes sollen symmetrische Positionen zusammengeführt werden. Die beiden relevanten
-      Symmetrien sind:
-          (A):
-          Die Dame steht immer oben in der ersten Hälfte der Spalte. 
-          Das Brett kann horizontal gespiegelt werden, wenn nötig.
-          (B):
-          Die Dame in der letzten Spalte hat immer eine niedrigere Position als die Dame in der ersten Spalte. 
-          Sonst kann das Schachbrett vertikal gespiegelt werden, um dasselbe Ergebnis zu erzielen.
-      
-      Ein Beispiel:
-      
-          vertikale
-          Spiegelung
-          hier entlang
-          |
-          |
-      | |d| | |
-      | | | |d|
-      ------------ horizontal Spiegelung hier entlang
-      |d| | | |
-      | | |d| |
-          |
-          |
-      
-      kann auch als wie folgt dargestelle werden:
-      ```
-      | | |d| |
-      |d| | | |
-      | | | |d|
-      | |d| | |
-      ```
-      
-      
-      Horizontal oder vertikal spielt hier keine Rolle, jedoch kann dies bei größeren Brettern der Fall sein.
-      Für eine funktionierende Symmetrie dürfen negative Werte nicht vorkommen. 
-      Zu Beginn sollten Sie in der Datei `board.cpp` die Funktion has_symmetries implementieren, welche überprüft, ob Symmetrien vorhanden sind. 
-      Im Anschluss sollten Sie die Spiegelungen in den Funktionen `horizontal_flip` und `vertical_flip` selbst implementieren. 
-      Zuletzt sollte die Funktion `symmetry_normalize` umgesetzt werden, welche die Position spiegelt, die einfach `horizontal_flip` und `vertical_flip` aufruft, falls gespiegelt werden muss.
-      
-      Die normalisierte Version von dem Brett ist die fundamentale Lösung von dem Problem.
-      
-      Weitere Details 
-      "Die Dame steht immer oben in der ersten Hälfte der Spalte. Das Brett kann horizontal
-      gespiegelt werden, wenn nötig" Was bedeutet diese Aussage zur horizontalen Symmetrie? Soll die Damen immer in der oberen Hälfte stehen, damit Symmetrie erreicht wird? 
-      Antwort: Andersrum: wir können annehmen dass die immer oben stehen. Falls die Dame unten steht, dann drehen wir das Brett um damit die wieder oben ist.
-      Wir machen die erste Dame (erste Spalte) in der oberen hälfte mit dem Argument dass es genau die selbe anzahl an lösungen hat wie die gespiegelte Version. Das heißt einam ausrechnen reicht.
-      Wir möchtest also nur die Brette im BDD haben wo:
-      `board[0] <= size/2`
-      und
-      `board[0] <= board[size - 1]`
-      
-      
-      ``` (Ende Aufgabe 9).
+    Dieses Mal geht es darum, die Lösung zu verbessern, die in diese Dateien implementier wurde: 
+    `bdd.cpp`,`bdd.hpp`,`bddMain.cpp`,`bddTest.cpp`,`board.cpp`,`board.hpp`,`boardTest.cpp`,`node.cpp`,`node.hpp`,`nqueens.cpp`,`nqueens.hpp`,`nqueensMain.cpp`,`nqueensTest.cpp`,`stack.cpp`,`stack.hpp`,`stackTest.cpp`,
+    Suchen Sie in den Dateien nach `NEW` um die veränderungen zu sehen (und `TODO` um zu sehen wo Sie was implementieren müssen).
+    Hinweis 1: 
+    Die Aufgaben 9 und 10 gehören zusammen, aber die anderen sind unabhänging. 
+    Sie können die Implementierung in beliebiger Reihenfolge machen.
+    Hinweis 2: 
+    Das Damenproblem mit Größe 4 und die dot-Graphen sind sehr nützlich um zu schauen,ob auch alles abgefangen werden kann.
+    
+    
+    Aufgabe 9: 
+    ```
+    (board.[ch]pp)
+    Zuerst brauchen wir ein Ordnung über Positionen: kürzer Bretter sind kürzer als lange Bretter.
+    Wenn die Länge gleich ist, dann vergleichen Bretter wie im Wörterbuch (lexicographische Ordnung) von links nacht rechts (kleiner Zahlen bedeuten kleiner, wenn gleich wird sich das nächste Element angeschaut). 
+    Zum Beispiel ist `[2, 4]` kleiner als `[2, 5]` und `[2, 200]`.
+    
+    Implementieren Sie in der Datei `board.hpp` die Ordnungsoperatoren `<` und `<=`.
+    Als nächstes sollen symmetrische Positionen zusammengeführt werden. Die beiden relevanten
+    Symmetrien sind:
+        (A):
+        Die Dame steht immer oben in der ersten Hälfte der Spalte. 
+        Das Brett kann horizontal gespiegelt werden, wenn nötig.
+        (B):
+        Die Dame in der letzten Spalte hat immer eine niedrigere Position als die Dame in der ersten Spalte. 
+        Sonst kann das Schachbrett vertikal gespiegelt werden, um dasselbe Ergebnis zu erzielen.
+    
+    Ein Beispiel:
+    
+        vertikale
+        Spiegelung
+        hier entlang
+        |
+        |
+    | |d| | |
+    | | | |d|
+    ------------ horizontal Spiegelung hier entlang
+    |d| | | |
+    | | |d| |
+        |
+        |
+    
+    kann auch als wie folgt dargestelle werden:
+    ```
+    | | |d| |
+    |d| | | |
+    | | | |d|
+    | |d| | |
+    ```
+    
+    
+    Horizontal oder vertikal spielt hier keine Rolle, jedoch kann dies bei größeren Brettern der Fall sein.
+    Für eine funktionierende Symmetrie dürfen negative Werte nicht vorkommen. 
+    Zu Beginn sollten Sie in der Datei `board.cpp` die Funktion has_symmetries implementieren, welche überprüft, ob Symmetrien vorhanden sind. 
+    Im Anschluss sollten Sie die Spiegelungen in den Funktionen `horizontal_flip` und `vertical_flip` selbst implementieren. 
+    Zuletzt sollte die Funktion `symmetry_normalize` umgesetzt werden, welche die Position spiegelt, die einfach `horizontal_flip` und `vertical_flip` aufruft, falls gespiegelt werden muss.
+    
+    Die normalisierte Version von dem Brett ist die fundamentale Lösung von dem Problem.
+    
+    Weitere Details 
+    "Die Dame steht immer oben in der ersten Hälfte der Spalte. Das Brett kann horizontal
+    gespiegelt werden, wenn nötig" Was bedeutet diese Aussage zur horizontalen Symmetrie? Soll die Damen immer in der oberen Hälfte stehen, damit Symmetrie erreicht wird? 
+    Antwort: Andersrum: wir können annehmen dass die immer oben stehen. Falls die Dame unten steht, dann drehen wir das Brett um damit die wieder oben ist.
+    Wir machen die erste Dame (erste Spalte) in der oberen hälfte mit dem Argument dass es genau die selbe anzahl an lösungen hat wie die gespiegelte Version. Das heißt einam ausrechnen reicht.
+    Wir möchtest also nur die Brette im BDD haben wo:
+    `board[0] <= size/2`
+    und
+    `board[0] <= board[size - 1]`
+    
+    
+    ``` (Ende Aufgabe 9).
 
 
 
 
-      
-      Aufgabe 10:
-      ``` 
-      (Symmetrien nutzen, `bdd.cpp` und `nqueens.cpp`) 
-      
-      Statt eines Vectors für die Knoten verwenden wir ein `std::set`. 
-      Dadurch sind die Knoten intern sortiert, was die Suche mit find effizienter macht.
-      
-      Beim Importien prüfen wir nun, ob die Position Symmetrien aufweist. 
-      Ist dies der Fall, normalisieren wir die Positionen und suchen nach bereits vorhandenen Knoten. 
-      Falls ein Knoten bereits existiert, wird der Parameter `already_exists` gesetzt. 
-      Falls es keine Symmetrien gibt, dann brauchen wir nicht nach Symmetrien zu suchen.
-      
-      Passen Sie den Algorithmus in `construct_bdd` an, um Positionen zu vermeiden, die mehrfach berechnet werden müssen. 
-      Beachten Sie, dass diese änderung keine Auswirkungen auf die Anzahl der Lösungen hat, sondern nur die Anzahl der Pfade reduziert.
-      Hinweis: 
-          Wir nutzen hier ein Trick. Wir wissen das die symmetrischen Lösung erst nach der fundamentalen Lösung.
-      
-      weitere Details: 
-      Frage: was genau mit dem bool already_exists gemmacht werden soll?
-      Antwort: Wenn der knoten schon existiert (nach Normalisierung), dann musst du einfach der flag setzen, was wiederum bedeutet, dass du dann brauchst du ja nichts auf dem Stack pushen.
-      ``` (Ende Aufgabe 10).
+    
+    Aufgabe 10:
+    ``` 
+    (Symmetrien nutzen, `bdd.cpp` und `nqueens.cpp`) 
+    
+    Statt eines Vectors für die Knoten verwenden wir ein `std::set`. 
+    Dadurch sind die Knoten intern sortiert, was die Suche mit find effizienter macht.
+    
+    Beim Importien prüfen wir nun, ob die Position Symmetrien aufweist. 
+    Ist dies der Fall, normalisieren wir die Positionen und suchen nach bereits vorhandenen Knoten. 
+    Falls ein Knoten bereits existiert, wird der Parameter `already_exists` gesetzt. 
+    Falls es keine Symmetrien gibt, dann brauchen wir nicht nach Symmetrien zu suchen.
+    
+    Passen Sie den Algorithmus in `construct_bdd` an, um Positionen zu vermeiden, die mehrfach berechnet werden müssen. 
+    Beachten Sie, dass diese änderung keine Auswirkungen auf die Anzahl der Lösungen hat, sondern nur die Anzahl der Pfade reduziert.
+    Hinweis: 
+        Wir nutzen hier ein Trick. Wir wissen das die symmetrischen Lösung erst nach der fundamentalen Lösung.
+    
+    weitere Details: 
+    Frage: was genau mit dem bool already_exists gemmacht werden soll?
+    Antwort: Wenn der knoten schon existiert (nach Normalisierung), dann musst du einfach der flag setzen, was wiederum bedeutet, dass du dann brauchst du ja nichts auf dem Stack pushen.
+    ``` (Ende Aufgabe 10).
 
 
-      Aufgabe 11:
-      ```
-      (Reducing BDD, `bdd.cpp`)
-      BDDs zielen darauf ab, die Knotenanzahl zu minimieren, indem sie Pfade fusionieren. 
-      Ist jeder Pfad mit "False"”" markiert, ersetzen wir den Knoten mit "False", um die Graphgröße zu reduzieren.
-      Um dies zu erreichen, werden wir eine rekursive Funktion mithilfe des postorder Tiefendurchlaufs
-      implementieren.
-      
-      ```
-      bool is_removable(node)
-      
-          // ist der node vielleicht ein Blatt vom BDD?
-          wenn knoten == true/false
-              return nicht löschbar / löschar
-          wenn knoten == nullptr
-              return nicht löschbar
-      
-          // anschauen ob die nachfolger gelöscht werden können, rekursiv:
-          is_removable(node->if_true)
-          is_removable(node->if_false)
-      
-          // jetzt schauen wir uns den Knoten selbst an
-          wenn ein nachfolger löschbar ist,
-              dann ersetze den jeweiligen nachfolger durch false.
-      
-          Wenn beide nachfolger gelöscht werden können,
-              dann markiere den Knoten als löschbar
-              return löschbar
+    Aufgabe 11:
+    ```
+    (Reducing BDD, `bdd.cpp`)
+    BDDs zielen darauf ab, die Knotenanzahl zu minimieren, indem sie Pfade fusionieren. 
+    Ist jeder Pfad mit "False"”" markiert, ersetzen wir den Knoten mit "False", um die Graphgröße zu reduzieren.
+    Um dies zu erreichen, werden wir eine rekursive Funktion mithilfe des postorder Tiefendurchlaufs
+    implementieren.
+    
+    ```
+    bool is_removable(node)
+    
+        // ist der node vielleicht ein Blatt vom BDD?
+        wenn knoten == true/false
+            return nicht löschbar / löschar
+        wenn knoten == nullptr
+            return nicht löschbar
+    
+        // anschauen ob die nachfolger gelöscht werden können, rekursiv:
+        is_removable(node->if_true)
+        is_removable(node->if_false)
+    
+        // jetzt schauen wir uns den Knoten selbst an
+        wenn ein nachfolger löschbar ist,
+            dann ersetze den jeweiligen nachfolger durch false.
+    
+        Wenn beide nachfolger gelöscht werden können,
+            dann markiere den Knoten als löschbar
+            return löschbar
+        
+        return nicht löschbar
+    ```
+    
+    
+    Um Knoten als löschbar zu markieren, nutzen wir den neuen Flag `to_delete` in der `Node` Klasse.
+    Implementieren Sie jetzt den Algorithmus in der Funktion `is_removable`.
+    Danach ändern Sie noch die Funktion `normalize_bdd` damit Knoten auch gelöscht werden aus nodes.
+    Hinweis: 
+        die Funktion wird schon in `nqueens` aufgerufen in immer größeren Abständen. 
+        Darum muss der Code auch `nullptr` unterstützen.
+    Hinweis 2: 
+        In einem BDD sollte man schauen ob die zwei Nachfolger von einem Knoten "true" sind. 
+        Wenn ja, kann der Knoten durch "true" ersetzt wird. Das kann aber bei uns nicht passieren.
           
-          return nicht löschbar
-      ```
-      
-      
-      Um Knoten als löschbar zu markieren, nutzen wir den neuen Flag `to_delete` in der `Node` Klasse.
-      Implementieren Sie jetzt den Algorithmus in der Funktion `is_removable`.
-      Danach ändern Sie noch die Funktion `normalize_bdd` damit Knoten auch gelöscht werden aus nodes.
-      Hinweis: 
-          die Funktion wird schon in `nqueens` aufgerufen in immer größeren Abständen. 
-          Darum muss der Code auch `nullptr` unterstützen.
-      Hinweis 2: 
-          In einem BDD sollte man schauen ob die zwei Nachfolger von einem Knoten "true" sind. 
-          Wenn ja, kann der Knoten durch "true" ersetzt wird. Das kann aber bei uns nicht passieren.
-            
 
-      Weitere Details: 
-      Verständnisfrage bzgl. dem Teil vom Algorithmus :
-      ```
-      // ist der node vielleicht ein Blatt vom BDD?
-      wenn knoten == true/false
-      return nicht löschbar / löschar
-      ```
-      Ist mit true/false gemeint, ob es sich beim Knoten um einen true_node/false_node handelt? Oder ob to_delete von dem Knoten true/false ist?
+    Weitere Details: 
+    Verständnisfrage bzgl. dem Teil vom Algorithmus :
+    ```
+    // ist der node vielleicht ein Blatt vom BDD?
+    wenn knoten == true/false
+    return nicht löschbar / löschar
+    ```
+    Ist mit true/false gemeint, ob es sich beim Knoten um einen true_node/false_node handelt? Oder ob to_delete von dem Knoten true/false ist?
 
-      Antwort: true_node und false_node. 
-      
-      ```(Ende Aufgabe 11).
-      
-      Aufgabe 12:
-      ```
-      (Fundamentale Lösungen, `bdd.cpp`)
-      Wikipedia unterscheidet zwischen den fundamentalen Lösungen (also solchen ohne Symmetrien) und denen mit Symmetrien. 
-      Letztere haben wir in Aufgabe 7 berechnet. 
-      Implementieren Sie nun die Funktion `count_fundamental_true_path()`, die jeden Knoten nur einmal zählt, um die fundamentalen Lösungen aufzuzählen. 
-      Verwenden Sie dafür den `to_delete`-Flag, um sich zu merken, dass Sie einen Knoten bereits besucht haben. Vergessen Sie nicht, alle Flags am Ende auf False zurückzusetzen!
-      ``` (Ende Aufgabe 12).
-      
-      Aufgabe 13:
-      ```
-      (Vererbung, `node.cpp` und `bdd.[ch]cpp`)
-      Wir wollen nun mit Vererbung arbeiten. Dazu nutzen wir die abstrakte Klasse `AbstractNode` (mit Id und Board). 
-      Von dieser Klasse erben zwei weitere Klassen: 
-          `Symmetrical_Node` (welche  die Knoten aus Aufgabe 12 mit Symmetrien repräsentiert), und 
-          `Dummy Node` (welche die Knoten aus der letzten Vorlesung repräsentiert, also genau die aus der Musterlösung).
-      
-      Bitte ändern Sie nun Ihre Implementierung so, dass beide Klassen von der Klasse `AbstractNode` erben und die `BDD`-Klasse nur noch Referenzen auf Objekte dieser allgemeinen Klasse speichert.
-      Es sollte nur noch in der `import_node`-Methode einen Unterschied geben, welche konkrete **Node**-Klasse genutzt wird.
-      ```
-      (Ende Aufgabe 13)
+    Antwort: true_node und false_node. 
+    
+    ```(Ende Aufgabe 11).
+    
+    Aufgabe 12:
+    ```
+    (Fundamentale Lösungen, `bdd.cpp`)
+    Wikipedia unterscheidet zwischen den fundamentalen Lösungen (also solchen ohne Symmetrien) und denen mit Symmetrien. 
+    Letztere haben wir in Aufgabe 7 berechnet. 
+    Implementieren Sie nun die Funktion `count_fundamental_true_path()`, die jeden Knoten nur einmal zählt, um die fundamentalen Lösungen aufzuzählen. 
+    Verwenden Sie dafür den `to_delete`-Flag, um sich zu merken, dass Sie einen Knoten bereits besucht haben. Vergessen Sie nicht, alle Flags am Ende auf False zurückzusetzen!
+    ``` (Ende Aufgabe 12).
+    
+    Aufgabe 13:
+    ```
+    (Vererbung, `node.cpp` und `bdd.[ch]cpp`)
+    Wir wollen nun mit Vererbung arbeiten. Dazu nutzen wir die abstrakte Klasse `AbstractNode` (mit Id und Board). 
+    Von dieser Klasse erben zwei weitere Klassen: 
+        `Symmetrical_Node` (welche  die Knoten aus Aufgabe 12 mit Symmetrien repräsentiert), und 
+        `Dummy Node` (welche die Knoten aus der letzten Vorlesung repräsentiert, also genau die aus der Musterlösung).
+    
+    Bitte ändern Sie nun Ihre Implementierung so, dass beide Klassen von der Klasse `AbstractNode` erben und die `BDD`-Klasse nur noch Referenzen auf Objekte dieser allgemeinen Klasse speichert.
+    Es sollte nur noch in der `import_node`-Methode einen Unterschied geben, welche konkrete **Node**-Klasse genutzt wird.
+    ```
+    (Ende Aufgabe 13)
 
     </pre>
 
