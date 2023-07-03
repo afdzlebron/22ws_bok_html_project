@@ -35,7 +35,7 @@
     <pre>
 
 
-    AUFGAbe 0:
+    AUFGABE 0::
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -255,7 +255,45 @@
     (Ende Aufgabe 13)
 
     </pre>
-
+    This is Makefile: 
+    <pre>
+      <code>
+        CXX = g++
+        CXXFLAGS=  --std=c++14 #-Wextra -Wall -pedantic
+        EXCLUDED = poly2.cpp
+        HEADERS = $(filter-out $(EXCLUDED), $(wildcard *.hpp))
+        OBJECTS = $(addsuffix .o, $(basename  $(filter-out $(EXCLUDED) %Test.cpp %Main.cpp, $(wildcard *.cpp))))
+        TESTLIBS = -lgtest -lgtest_main -lpthread
+        TEST_BINARIES = $(basename $(wildcard *[Tt]est.cpp))
+        
+        all: clean compile
+        
+        %.o: %.cpp $(HEADERS)
+          $(CXX) $(CXXFLAGS) -c $<
+        
+        %Main: %Main.cpp $(OBJECTS)
+          $(CXX) $(CXXFLAGS) -o $@ $^
+        
+        compile: bddMain nqueensMain
+        
+        %Test: %Test.o $(OBJECTS)
+          $(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)  $(TESTLIBS)
+        
+        test: $(TEST_BINARIES)
+          echo "$(TESTS)"
+          for test in `ls *Test` ; \
+          do \
+          ./$$test || (echo "failed test $$test" && exit 255) \
+          done
+        
+        clean:
+          rm -f small_test_bdd*.txt *Main *Test *.o 
+        
+        format:
+          clang-format -i *.cpp *.hpp
+        
+      </code>
+    </pre>
     Here is bdd.cpp:
     <pre><code>
     #include "bdd.hpp"
@@ -659,56 +697,38 @@
     }
     
     bool Board::has_symmetries() const {
-      // Wir gehen davon aus, dass das Brett nicht leer ist.
-      assert(size > 0);
+      /*NEW ÜB 10, Aufgabe 10*/
+      // Wir überprüfen, ob die Position die beiden Symmetrien (A) und (B) erfüllt.
+      // (A): Die Dame steht immer oben in der ersten Hälfte der Spalte.
+      // (B): Die Dame in der letzten Spalte hat immer eine niedrigere Position als
+      // die Dame in der ersten Spalte.
     
-      // Wir prüfen zuerst die Symmetrie (A).
-      // Dazu iterieren wir über die Spalten von links nach rechts und schauen, ob
-      // die Dame in der oberen Hälfte steht.
+      // Wir iterieren über alle Spalten von links nach rechts.
       for (int i = 0; i < size; ++i) {
-        // Wenn die Spalte leer ist, überspringen wir sie.
-        if (board[i] <= 0) continue;
+        // Wir holen den Wert der Spalte.
+        int value = board[i];
     
-        // Wenn die Dame in der unteren Hälfte steht, gibt es keine Symmetrie (A).
-        if (board[i] > size / 2) return false;
+        // Wenn der Wert negativ ist, bedeutet das, dass es keine Dame in dieser
+        // Spalte gibt. Wir fahren fort.
+        if (value < 0) continue;
     
-        // Wenn die Dame genau in der Mitte steht und die Größe ungerade ist, gibt
-        // es keine Symmetrie (A).
-        if (board[i] == size / 2 + 1 && size % 2 == 1) return false;
+        // Wenn der Wert positiv ist, bedeutet das, dass es eine Dame an dieser
+        // Position gibt. Wir überprüfen die Symmetrien.
+    
+        // Für Symmetrie (A) müssen wir sicherstellen, dass die Dame in der oberen
+        // Hälfte der Spalte steht. Das heißt, dass der Wert kleiner oder gleich
+        // size / 2 sein muss.
+        if (value > size / 2) return false;  // Symmetrie (A) ist verletzt.
+    
+        // Für Symmetrie (B) müssen wir sicherstellen, dass die Dame in der letzten
+        // Spalte eine niedrigere Position als die Dame in der ersten Spalte hat.
+        // Das heißt, dass wenn i == size - 1 ist, dann muss value < board[0] sein.
+        if (i == size - 1 && value >= board[0])
+          return false;  // Symmetrie (B) ist verletzt.
       }
     
-      // Wir prüfen nun die Symmetrie (B).
-      // Dazu vergleichen wir die Positionen der Damen in der ersten und letzten
-      // Spalte.
-      int first =
-          -1;  // Die Position der Dame in der ersten Spalte oder -1, wenn leer.
-      int last =
-          -1;  // Die Position der Dame in der letzten Spalte oder -1, wenn leer.
-    
-      for (int i = 0; i < size; ++i) {
-        // Wir suchen nach der ersten nicht-leeren Spalte von links.
-        if (first == -1 && board[i] > 0) {
-          first = board[i];
-        }
-    
-        // Wir suchen nach der ersten nicht-leeren Spalte von rechts.
-        if (last == -1 && board[size - i - 1] > 0) {
-          last = board[size - i - 1];
-        }
-    
-        // Wenn wir beide gefunden haben, brechen wir die Schleife ab.
-        if (first != -1 && last != -1) break;
-      }
-    
-      // Wenn beide Spalten leer sind oder nur eine Spalte leer ist, gibt es keine
-      // Symmetrie (B).
-      if (first == -1 || last == -1) return false;
-    
-      // Wenn die Dame in der letzten Spalte eine höhere Position hat als die Dame
-      // in der ersten Spalte, gibt es keine Symmetrie (B).
-      if (last > first) return false;
-    
-      // Ansonsten gibt es beide Symmetrien.
+      // Wenn wir alle Spalten überprüft haben und keine Symmetrie verletzt wurde,
+      // geben wir true zurück.
       return true;
     }
     
@@ -852,13 +872,26 @@
     }
     
     bool Board::operator<=(const Board &n) const {
+      /*NEW ÜB 10, Aufgabe 9*/
+      // Wir überprüfen zuerst, ob die Größe der beiden Positionen gleich ist.
       assert(size == n.size);
     
-      for (int i = size - 1; i >= 0; --i) {
-        if (board[i] < n.board[i]) return true;
-        if (board[i] > n.board[i]) return false;
+      // Wir vergleichen die Werte der beiden Positionen lexicographisch von links
+      // nach rechts. Negative Werte werden als negative Zahlen behandelt.
+      for (int i = 0; i < size; ++i) {
+        int value1 = board[i];
+        int value2 = n.board[i];
+    
+        // Wenn value1 kleiner als value2 ist, geben wir true zurück.
+        if (value1 < value2) return true;
+    
+        // Wenn value1 größer als value2 ist, geben wir false zurück.
+        if (value1 > value2) return false;
+    
+        // Wenn value1 gleich value2 ist, fahren wir mit der nächsten Spalte fort.
       }
     
+      // Wenn alle Werte gleich sind, geben wir true zurück.
       return true;
     }
     </code></pre>
@@ -1647,7 +1680,8 @@
     
     #endif
     </code></pre>
-
+    
+      
   </main>
 
 </body>
