@@ -324,30 +324,46 @@
     }
     
     int BDD::count_true_path() const {
-      /*ÜB9, Aufgabe 7*/
-      return 0;
-      Stack<Node *> queue;
+      // Wir erstellen einen Stack, um die Knoten zu speichern, die wir noch
+      // besuchen müssen.
+      std::stack<Node *> stack;
+    
+      // Wir initialisieren die Anzahl der Pfade zum wahren Blatt mit 0.
       int path = 0;
     
-      if (!root) return 0;
+      // Wenn der BDD leer ist, geben wir 0 zurück.
+      if (!root)
+        return 0;
     
-      queue.push(root);
+      // Wir fügen den Wurzelknoten zum Stack hinzu.
+      stack.push(root);
     
-      while (!queue.empty()) {
-        Node *b = queue.top();
-        queue.pop();
+      // Wir bearbeiten den Stack, bis er leer ist.
+      while (!stack.empty()) {
+        // Wir nehmen den obersten Knoten vom Stack.
+        Node *b = stack.top();
+        stack.pop();
+    
+        // Wenn der Knoten das wahre Blatt ist, erhöhen wir die Anzahl der Pfade zum
+        // wahren Blatt um 1 und fahren fort.
         if (b == true_node) {
           ++path;
           continue;
         }
-        if (b == false_node) continue;
     
-        queue.push(b->if_true);
-        queue.push(b->if_false);
+        // Wenn der Knoten das falsche Blatt ist, fahren wir fort.
+        if (b == false_node)
+          continue;
+    
+        // Wir fügen beide Nachfolger des Knotens zum Stack hinzu.
+        stack.push(b->if_true);
+        stack.push(b->if_false);
       }
     
+      // Wir geben die Anzahl der Pfade zum wahren Blatt zurück.
       return path;
     }
+    
     
     int BDD::count_fundamental_true_path() const {
       /*NEW ÜB 10, Aufgabe 10*/
