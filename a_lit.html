@@ -35,7 +35,7 @@
     <pre>
 
 
-    auFGaBe 0::
+    A U F G A B E 0::
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -699,36 +699,55 @@
     bool Board::has_symmetries() const {
       /*NEW ÜB 10, Aufgabe 10*/
       // Wir überprüfen, ob die Position die beiden Symmetrien (A) und (B) erfüllt
-      // (A): Die Dame steht immer oben in der ersten Hälfte der Spalte[6].
+      // (A): Die Dame steht immer oben in der ersten Hälfte der Spalte.
       // (B): Die Dame in der letzten Spalte hat immer eine niedrigere Position als
       // die Dame in der ersten Spalte
       // Wir iterieren über alle Spalten von links nach rechts
-      int first = -1;
-      int last = -1;
+      int first =
+          -1;  // Die Position der Dame in der ersten Spalte oder -1, wenn leer
+      int last =
+          -1;  // Die Position der Dame in der letzten Spalte oder -1, wenn leer
       for (int i = 0; i < size; ++i) {
-        if (board[i] > 0) {
-          if (first == -1) {
-            first = i;
+        // Wir suchen nach der ersten nicht-leeren Spalte von links
+        if (first == -1 && board[i] > 0) {
+          first = board[i];
+        }
+        // Wir suchen nach der ersten nicht-leeren Spalte von rechts
+        if (last == -1 && board[size - i - 1] > 0) {
+          last = board[size - i - 1];
+        }
+        // Wenn wir beide gefunden haben, brechen wir die Schleife ab
+        if (first != -1 && last != -1) break;
+      }
+      // Wenn beide Spalten leer sind oder nur eine Spalte leer ist, gibt es keine
+      // Symmetrie (B)
+      if (first == -1 || last == -1) return false;
+    
+      // Wir iterieren nochmal über alle Spalten von links nach rechts
+      for (int i = 0; i < size; ++i) {
+        assert(board[i] >= 0);
+        // Wenn die Spalte leer ist, überspringen wir sie
+        if (board[i] == 0) continue;
+    
+        // Wenn die Dame in der unteren Hälfte steht oder genau in der Mitte bei
+        // ungerader Größe, gibt es keine horizontale Symmetrie (A)
+        if (board[i] > size / 2 || (board[i] == size / 2 + 1 && size % 2 == 1)) {
+          return false;
+        }
+    
+        // Wenn die Dame in einer anderen Spalte als der ersten oder letzten steht,
+        // müssen wir noch überprüfen, ob sie eine niedrigere Position als die Dame
+        // in der ersten oder eine höhere Position als die Dame in der letzten hat.
+        // Wenn ja, gibt es keine vertikale Symmetrie (B)
+        if (i != 0 && i != size - 1) {
+          if (board[i] <= first || board[i] >= last) {
+            return false;
           }
-          last = i;
         }
       }
-      if (first == -1 || first == last) {
-        return false;
-      }
     
-      // check if the queen in the first column is in the upper half of the board
-      if (board[first] > size / 2) {
-        return true;  // horizontal symmetry
-      }
-    
-      // check if the queen in the last column has a lower position than the queen
-      // in the first column
-      if (board[last] >= board[first]) {
-        return true;  // vertical symmetry
-      }
-    
-      return false;  // no symmetries
+      // Wenn alle Damen die Symmetrien erfüllen, geben wir true zurück
+      return true;
     }
     
     void Board::horizontal_flip() {
@@ -1666,7 +1685,7 @@
     
     #endif
     </code></pre>
-    
+
   </main>
 
 </body>
