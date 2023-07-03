@@ -35,7 +35,7 @@
     <pre>
 
 
-    auFGABE 0::
+    aufGaBE 0::
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -299,6 +299,7 @@
     #include "bdd.hpp"
     
     #include <vector>
+    #include <stack>
     
     #include "stack.hpp"
     
@@ -391,8 +392,56 @@
     
     int BDD::count_fundamental_true_path() const {
       /*NEW ÜB 10, Aufgabe 10*/
-      /*TODO ÜB10, Aufgabe 12*/
-      return 0;
+      // Wir erstellen einen Stack, um die Knoten zu speichern, die wir noch
+      // besuchen müssen.
+      std::stack<Node *> stack;
+    
+      // Wir initialisieren die Anzahl der fundamentalen Lösungen mit 0
+      int path = 0;
+    
+      // Wenn der BDD leer ist, geben wir 0 zurück
+      if (!root) return 0;
+    
+      // Wir fügen den Wurzelknoten zum Stack hinzu
+      stack.push(root);
+    
+      // Wir bearbeiten den Stack, bis er leer ist
+      while (!stack.empty()) {
+        // Wir nehmen den obersten Knoten vom Stack
+        Node *b = stack.top();
+        stack.pop();
+    
+        // Wenn der Knoten das wahre Blatt ist, erhöhen wir die Anzahl der
+        // fundamentalen Lösungen um 1 und fahren fort
+        if (b == true_node) {
+          ++path;
+          continue;
+        }
+    
+        // Wenn der Knoten das falsche Blatt ist, fahren wir fort
+        if (b == false_node) continue;
+    
+        // Wenn der Knoten bereits besucht wurde (to_delete ist true), fahren wir
+        // fort. Dies vermeidet, dass wir symmetrische Lösungen doppelt zählen
+        if (b->to_delete) continue;
+    
+        // Wir markieren den Knoten als besucht, indem wir to_delete auf true
+        // setzen.
+        b->to_delete = true;
+    
+        // Wir fügen beide Nachfolger des Knotens zum Stack hinzu
+        stack.push(b->if_true);
+        stack.push(b->if_false);
+      }
+    
+      // Wir setzen alle to_delete-Flags wieder auf false, um den BDD nicht zu
+      // verändern.
+      for (auto &n : nodes) {
+        n->to_delete = false;
+      }
+    
+      // Wir geben die Anzahl der fundamentalen Lösungen zurück
+      return path;
     }
     
     std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
