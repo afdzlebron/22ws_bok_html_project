@@ -35,7 +35,7 @@
     <pre>
 
 
-    AUF G A B E 0::
+    AUFGABE 0::
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -743,29 +743,16 @@
     }
     
     void Board::horizontal_flip() {
-      /*TODO ÜB 10, Aufgabe 10*/
-      // return;
-    
-      // iterate over each column of the board from left to right
       for (int i = 0; i < size; ++i) {
-        // compute the symmetric position of a queen in a column as size - board[i]
-        // + 1
-        int sym = size - board[i] + 1;
-        // swap the position of the queen in a column with its symmetric position
-        std::swap(board[i], sym);
+        if (board[i] > 0) {
+          board[i] = size - board[i] + 1;
+        }
       }
     }
     
     void Board::vertical_flip() {
-      /*TODO ÜB 10, Aufgabe 10*/
-      // assert(false);
-    
-      // iterate over each row of the board from top to bottom
       for (int i = 0; i < size / 2; ++i) {
-        // compute the symmetric position of a queen in a row as size - i + 1
-        int sym = size - i + 1;
-        // swap the position of the queen in a row with its symmetric position
-        std::swap(board[i], board[sym]);
+        std::swap(board[i], board[size - i - 1]);
       }
     }
     
