@@ -289,11 +289,9 @@
     </pre>
     Here is bdd.cpp:
     <pre><code>
-    #include "bdd.hpp"
-    
-    #include <stack>
     #include <vector>
     
+    #include "bdd.hpp"
     #include "stack.hpp"
     
     /* ÜB 10, Aufgabe 10*/
@@ -303,36 +301,23 @@
       const bool not_normalized = a.has_symmetries();
       Node *n;
     
-      // check if the position has symmetries
-      if (not_normalized) {
-        // normalize the position by applying horizontal and/or vertical flips
-        a.symmetry_normalize();
-        // search for the normalized position in the existing nodes
-        Node dummy(0, a);  // create a dummy node with the normalized position
-        auto it = nodes.find(&dummy);  // use the find method of std::set
-        if (it != nodes.end()) {
-          // if the node is found, set the already_exists flag to true
-          already_exists = true;
-          // return the existing node
-          return *it;
-        } else {
-          // if the node is not found, set the already_exists flag to false
-          already_exists = false;
-          // create a new node with the normalized position and a fresh id
-          n = new Node(fresh_id, a);
-        }
+      const bool ub10_aufgabe10_schon_implementiert = false;
+      if (ub10_aufgabe10_schon_implementiert && not_normalized) {
+        /*NEW ÜB 10, Aufgabe 10*/
+        /*TODO ÜB 10, Aufgabe 10*/
+        /*nicht vergessen ub10_aufgabe10_schon_implementiert zu löschen!*/
+        assert(false);
       } else {
-        // if the position has no symmetries, set the already_exists flag to false
         already_exists = false;
-        // create a new node with the original position and a fresh id
-        n = new Node(fresh_id, b);
+        n = new Node(fresh_id, a);
       }
     
       ++fresh_id;
-      // insert the new node into the std::set of nodes
+      // NEW ÜB10: adapted to std::set
       nodes.insert(n);
     
-      if (!root) root = n;
+      if (!root)
+        root = n;
       return n;
     }
     
@@ -358,88 +343,43 @@
     }
     
     int BDD::count_true_path() const {
-      // Wir erstellen einen Stack, um die Knoten zu speichern, die wir noch
-      // besuchen müssen.
-      std::stack<Node *> stack;
-    
-      // Wir initialisieren die Anzahl der Pfade zum wahren Blatt mit 0
+      /*ÜB9, Aufgabe 7*/
+      return 0;
+      Stack<Node *> queue;
       int path = 0;
     
-      // Wenn der BDD leer ist, geben wir 0 zurück
-      if (!root) return 0;
+      if (!root)
+        return 0;
     
-      // Wir fügen den Wurzelknoten zum Stack hinzu
-      stack.push(root);
+      queue.push(root);
     
-      // Wir bearbeiten den Stack, bis er leer ist
-      while (!stack.empty()) {
-        // Wir nehmen den obersten Knoten vom Stack
-        Node *b = stack.top();
-        stack.pop();
-    
-        // Wenn der Knoten das wahre Blatt ist, erhöhen wir die Anzahl der Pfade zum
-        // wahren Blatt um 1 und fahren fort
-        if (b == true_node) {  // Hier haben wir den Vergleich geändert
-          ++path;
-          continue;
-        }
-    
-        // Wenn der Knoten das falsche Blatt ist, fahren wir fort
-        if (b == false_node) continue;
-    
-        // Wir fügen beide Nachfolger des Knotens zum Stack hinzu
-        stack.push(b->if_true);
-        stack.push(b->if_false);
-      }
-    
-      // Wir geben die Anzahl der Pfade zum wahren Blatt zurück
-      return path;
-    }
-    
-    int BDD::count_fundamental_true_path() const {
-      // Wir erstellen einen Stack, um die Knoten zu speichern, die wir noch
-      // besuchen müssen.
-      std::stack<Node *> stack;
-      // Wir initialisieren die Anzahl der fundamentalen Lösungen mit 0
-      int path = 0;
-      // Wenn der BDD leer ist, geben wir 0 zurück
-      if (!root) return 0;
-      // Wir fügen den Wurzelknoten zum Stack hinzu
-      stack.push(root);
-      // Wir bearbeiten den Stack, bis er leer ist
-      while (!stack.empty()) {
-        // Wir nehmen den obersten Knoten vom Stack
-        Node *b = stack.top();
-        stack.pop();
-        // Wenn der Knoten das wahre Blatt ist, erhöhen wir die Anzahl der
-        // fundamentalen Lösungen um 1 und fahren fort
+      while (!queue.empty()) {
+        Node *b = queue.top();
+        queue.pop();
         if (b == true_node) {
           ++path;
           continue;
         }
-        // Wenn der Knoten das falsche Blatt ist oder bereits besucht wurde
-        // (to_delete ist true), fahren wir fort. Dies vermeidet, dass wir
-        // symmetrische Lösungen doppelt zählen
-        if (b == false_node || b->to_delete) continue;
-        // Wir markieren den Knoten als besucht, indem wir to_delete auf true
-        // setzen.
-        b->to_delete = true;
-        // Wir fügen beide Nachfolger des Knotens zum Stack hinzu
-        stack.push(b->if_true);
-        stack.push(b->if_false);
+        if (b == false_node)
+          continue;
+    
+        queue.push(b->if_true);
+        queue.push(b->if_false);
       }
-      // Wir setzen alle to_delete-Flags wieder auf false, um den BDD nicht zu
-      // verändern.
-      for (auto &n : nodes) {
-        n->to_delete = false;
-      }
-      // Wir geben die Anzahl der fundamentalen Lösungen zurück
+    
       return path;
+    }
+    
+    int BDD::count_fundamental_true_path() const {
+      /*NEW ÜB 10, Aufgabe 10*/
+      /*TODO ÜB10, Aufgabe 12*/
+      return 0;
     }
     
     std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
       std::vector<Node *> queue;
-      if (bdd.root) queue.push_back(bdd.root);
+      if (bdd.root)
+        queue.push_back(bdd.root);
       const std::string true_name("true");
       const std::string false_name("false");
     
@@ -474,56 +414,19 @@
       return stream;
     }
     
-    // We implement a recursive post-order traversal of the BDD
+    // We implement a recursive port-order traversal of the BDD
     bool BDD::is_removable(Node *b) {
       /*NEW ÜB 10, Aufgabe 11*/
-      // Wir überprüfen, ob der Knoten ein Blatt ist oder null ist
-      if (b == true_node || b == false_node || b == nullptr)
-        return false;  // In diesem Fall ist er nicht löschbar
-    
-      // Wir überprüfen rekursiv, ob die Nachfolger des Knotens löschbar sind
-      bool if_true_removable = is_removable(b->if_true);
-      bool if_false_removable = is_removable(b->if_false);
-    
-      // Wenn ein Nachfolger löschbar ist, ersetzen wir ihn durch den falschen
-      // Knoten.
-      if (if_true_removable) b->if_true = false_node;
-      if (if_false_removable) b->if_false = false_node;
-    
-      // Wenn beide Nachfolger löschbar sind, markieren wir den Knoten als löschbar
-      // und geben true zurück.
-      if (if_true_removable && if_false_removable) {
-        b->to_delete = true;
-        return true;
-      }
-    
-      // Sonst geben wir false zurück
+      /*TODO ÜB 10, Aufgabe 11*/
       return false;
     }
     
-    // remove useless parts of the entire BDD, by checking if the root should be
-    // removed
+    // remove useless parts of the entire BDD, by checking if the root should be removed
     void BDD::normalize_bdd() {
       /*NEW ÜB 10, Aufgabe 11*/
-      // Wir rufen die rekursive Funktion is_removable auf dem Wurzelknoten auf
-      bool root_removable = is_removable(root);
-    
-      // Wenn der Wurzelknoten löschbar ist, setzen wir ihn auf den falschen Knoten
-      if (root_removable) root = false_node;
-    
-      // Wir iterieren über alle Knoten im BDD und löschen diejenigen, die als
-      // löschbar markiert sind
-      for (auto it = nodes.begin(); it != nodes.end();) {
-        Node *n = *it;
-        if (n->to_delete) {
-          delete n;
-          it = nodes.erase(it);
-        } else {
-          ++it;
-        }
-      }
-    }
-    </code></pre>
+      /*TODO ÜB 10, Aufgabe 11*/
+      return;
+    }</code></pre>
     Here is bddMain.cpp:
     <pre><code>
     #include "bdd.hpp"
@@ -677,82 +580,174 @@
     }
     
     bool Board::has_symmetries() const {
-      // Wir überprüfen zuerst die Symmetrie (B) // Hier haben wir die Reihenfolge
-      // geändert Dazu vergleichen wir die Positionen der Damen in der ersten und
-      // letzten Spalte
-      int first =
-          -1;  // Die Position der Dame in der ersten Spalte oder -1, wenn leer
-      int last =
-          -1;  // Die Position der Dame in der letzten Spalte oder -1, wenn leer
+      // TODO ÜB 10, Aufgabe 10
+      //  Wir überprüfen, ob die beiden Symmetrien (A) und (B) aus der Aufgabe
+      //  erfüllt sind (A): Die Dame steht immer oben in der ersten Hälfte der
+      //  Spalte. Das Brett kann horizontal gespiegelt werden, wenn nötig. (B): Die
+      //  Dame in der letzten Spalte hat immer eine niedrigere Position als die Dame
+      //  in der ersten Spalte. Sonst kann das Schachbrett vertikal gespiegelt
+      //  werden, um dasselbe Ergebnis zu erzielen.
+    
+      // Wir gehen davon aus, dass das Brett korrekt ist, d.h. keine zwei Damen sich
+      // angreifen können
+      assert(is_valid());
+    
+      // Wir prüfen zuerst die Bedingung (A)
+      bool horizontal_symmetry = true;
       for (int i = 0; i < size; ++i) {
-        // Wir suchen nach der ersten nicht-leeren Spalte von links
-        if (first == -1 && board[i] > 0) {
-          first = board[i];
+        // Wenn die Dame in der Spalte i nicht in der oberen Hälfte steht, dann gibt
+        // es keine horizontale Symmetrie
+        if (board[i] > size / 2) {
+          horizontal_symmetry = false;
+          break;
         }
-        // Wir suchen nach der ersten nicht-leeren Spalte von rechts
-        if (last == -1 && board[size - i - 1] > 0) {
-          last = board[size - i - 1];
-        }
-        // Wenn wir beide gefunden haben, brechen wir die Schleife ab
-        if (first != -1 && last != -1) break;
-      }
-      // Wenn beide Spalten leer sind oder nur eine Spalte leer ist, gibt es keine
-      // Symmetrie (B)
-      if (first == -1 || last == -1) return false;
-      // Wenn die Dame in der letzten Spalte eine höhere Position hat als die Dame
-      // in der ersten Spalte, gibt es keine vertikale Symmetrie (B)
-      if (last > first) {
-        return false;
       }
     
-      // Wir prüfen nun die Symmetrie (A) // Hier haben wir die Reihenfolge geändert
-      // Dazu iterieren wir über die Spalten von links nach rechts und schauen, ob
-      // die Dame in der oberen Hälfte steht
-      bool need_horizontal_flip =
-          false;  // Diese Variable wird auf true gesetzt, wenn wir eine horizontale
-                  // Spiegelung brauchen
-      for (int i = 0; i < size; ++i) {
-        assert(board[i] >= 0);
-        // Wenn die Spalte leer ist, überspringen wir sie
-        if (board[i] == 0) continue;
-        // Wenn die Dame in der unteren Hälfte steht oder genau in der Mitte bei
-        // ungerader Größe steht, gibt es keine horizontale Symmetrie (A)
-        if (board[i] > size / 2 || (board[i] == size / 2 + 1 && size % 2 == 1)) {
-          return false;
-        }
+      // Wir prüfen dann die Bedingung (B)
+      bool vertical_symmetry = true;
+      // Wenn die Dame in der ersten Spalte eine höhere Position hat als die Dame in
+      // der letzten Spalte, dann gibt es keine vertikale Symmetrie
+      if (board[0] > board[size - 1]) {
+        vertical_symmetry = false;
       }
-      // Wenn alle Damen die Symmetrien erfüllen, geben wir true zurück
-      return true;
+    
+      // Wir geben zurück, ob eine der beiden Symmetrien vorhanden ist
+      return horizontal_symmetry || vertical_symmetry;
     }
     
     void Board::horizontal_flip() {
+      // TODO ÜB 10, Aufgabe 10
+      //  Wir spiegeln das Brett horizontal, indem wir jede Dame in ihrer Spalte an
+      //  die gegenüberliegende Position setzen
       for (int i = 0; i < size; ++i) {
-        if (board[i] <= 0) continue;
-        board[i] = size + 1 - board[i];
+        // Wenn die Dame in der Spalte i existiert, dann setzen wir sie an die
+        // Position size - board[i] + 1
+        if (board[i] > 0) {
+          board[i] = size - board[i] + 1;
+        }
+        // Wenn es keine Dame in der Spalte i gibt, dann ändern wir nichts
+        else {
+          continue;
+        }
       }
     }
+    
     void Board::vertical_flip() {
-      for (int i = 0; i < size / 2; ++i) {
-        std::swap(board[i], board[size - i - 1]);
+      // TODO ÜB 10, Aufgabe 10
+      //  Wir spiegeln das Brett vertikal, indem wir jede Dame in ihrer Zeile an die
+      //  gegenüberliegende Spalte setzen Dazu erstellen wir ein neues Array von int
+      //  mit der gleichen Größe wie das alte
+      int *new_board = new int[size];
+    
+      for (int i = 0; i < size; ++i) {
+        // Wenn die Dame in der Spalte i existiert, dann setzen wir sie an die
+        // Spalte size - i -1 im neuen Array
+        if (board[i] > 0) {
+          new_board[size - i - 1] = board[i];
+        }
+        // Wenn es keine Dame in der Spalte i gibt, dann setzen wir im neuen Array
+        // auch keinen Wert
+        else {
+          new_board[size - i - 1] = board[i];
+        }
+    
+        // Wir löschen das alte Array und weisen dem board-Attribut das neue Array
+        // zu
+        delete[] board;
+        board = new_board;
       }
     }
     
     void Board::symmetry_normalize() {
-      if (!has_symmetries()) return;
-      horizontal_flip();
-      if (!has_symmetries()) return;
-      vertical_flip();
+      // TODO ÜB 10, Aufgabe 10
+      //  Wir normalisieren das Brett, indem wir es ggf. spiegeln, um die
+      //  Symmetrien auszunutzen Dazu prüfen wir zuerst, ob es überhaupt
+      //  Symmetrien gibt
+      if (has_symmetries()) {
+        // Wenn ja, dann spiegeln wir das Brett horizontal, falls die Bedingung
+        // (A) nicht erfüllt ist
+        if (board[0] > size / 2) {
+          horizontal_flip();
+        }
+        // Dann spiegeln wir das Brett vertikal, falls die Bedingung (B) nicht
+        // erfüllt ist
+        if (board[0] > board[size - 1]) {
+          vertical_flip();
+        }
+      }
+      // Wenn es keine Symmetrien gibt, dann machen wir nichts
+      else {
+        return;
+      }
     }
     
     bool Board::operator<(const Board &n) const {
-      if (size != n.size) return size < n.size;
-      for (int i = 0; i < size; ++i) {
-        if (board[i] != n.board[i]) return board[i] < n.board[i];
+      // TODO ÜB 10, Aufgabe 9
+      //  Wir vergleichen zwei Bretter in der Shortlex-Ordnung, d.h. kürzere
+      //  Bretter sind kleiner als längere Bretter Wenn die Länge gleich ist, dann
+      //  vergleichen wir die Bretter wie im Wörterbuch (lexikographische Ordnung)
+      //  von links nach rechts Negative Werte werden als negative Zahlen
+      //  behandelt
+    
+      // Wir prüfen zuerst, ob die Größe der Bretter unterschiedlich ist
+      if (size != n.size) {
+        // Wenn ja, dann ist das kürzere Brett kleiner als das längere Brett
+        return size < n.size;
       }
-      return false;
+      // Wenn nein, dann vergleichen wir die Elemente der Bretter in jeder Spalte
+      else {
+        for (int i = 0; i < size; ++i) {
+          // Wenn die Elemente in der Spalte i unterschiedlich sind, dann ist das
+          // Brett mit dem kleineren Element kleiner als das andere Brett
+          if (board[i] != n.board[i]) {
+            return board[i] < n.board[i];
+          }
+          // Wenn die Elemente in der Spalte i gleich sind, dann machen wir weiter
+          // mit der nächsten Spalte
+          else {
+            continue;
+          }
+        }
+        // Wenn alle Elemente der Bretter gleich sind, dann sind die Bretter
+        // gleich und keines ist kleiner als das andere
+        return false;
+      }
     }
     
-    bool Board::operator<=(const Board &n) const { return *this < n || *this == n; }
+    bool Board::operator<=(const Board &n) const {
+      // TODO ÜB 10, Aufgabe 9
+      //  Wir vergleichen zwei Bretter in der Shortlex-Ordnung, d.h. kürzere
+      //  Bretter sind kleiner oder gleich als längere Bretter Wenn die Länge
+      //  gleich ist, dann vergleichen wir die Bretter wie im Wörterbuch
+      //  (lexikographische Ordnung) von links nach rechts Negative Werte werden
+      //  als negative Zahlen behandelt
+    
+      // Wir prüfen zuerst, ob die Größe der Bretter unterschiedlich ist
+      if (size != n.size) {
+        // Wenn ja, dann ist das kürzere Brett kleiner oder gleich als das längere
+        // Brett
+        return size <= n.size;
+      }
+      // Wenn nein, dann vergleichen wir die Elemente der Bretter in jeder Spalte
+      else {
+        for (int i = 0; i < size; ++i) {
+          // Wenn die Elemente in der Spalte i unterschiedlich sind, dann ist das
+          // Brett mit dem kleineren Element kleiner oder gleich als das andere
+          // Brett
+          if (board[i] != n.board[i]) {
+            return board[i] <= n.board[i];
+          }
+          // Wenn die Elemente in der Spalte i gleich sind, dann machen wir weiter
+          // mit der nächsten Spalte
+          else {
+            continue;
+          }
+        }
+        // Wenn alle Elemente der Bretter gleich sind, dann sind die Bretter
+        // gleich und somit auch kleiner oder gleich als einander
+        return true;
+      }
+    }
     </code></pre>
     Here is boardTest.cpp:
     <pre><code>
@@ -803,20 +798,18 @@
     
       std::stringstream b_position;
       b_position << b;
-      ASSERT_EQ(b_position.str(),
-                "| |d| |\n"
-                "| | |d|\n"
-                "|d| | |\n");
+      ASSERT_EQ(b_position.str(), "| |d| |\n"
+                                  "| | |d|\n"
+                                  "|d| | |\n");
       b.board[0] = -3;
       b.board[1] = 1;
       b.board[2] = 2;
     
       std::stringstream c_position;
       c_position << b;
-      ASSERT_EQ(c_position.str(),
-                "|.|d| |\n"
-                "|.| |d|\n"
-                "|.| | |\n");
+      ASSERT_EQ(c_position.str(), "|.|d| |\n"
+                                  "|.| |d|\n"
+                                  "|.| | |\n");
     }
     
     TEST(BoardTest, validTest) {
@@ -853,14 +846,14 @@
     }
     
     TEST(BoardTest, flipTest) {
+    
       Board b(4);
       b.board[0] = 3;
       b.board[1] = 1;
       b.board[2] = 4;
       b.board[3] = 2;
     
-      // ASSERT_TRUE(b.has_symmetries());
-      ASSERT_FALSE(b.has_symmetries());
+      ASSERT_TRUE(b.has_symmetries());
       b.horizontal_flip();
     
       ASSERT_EQ(b.board[0], 2);
@@ -910,6 +903,7 @@
     }
     
     TEST(BoardTest, orderTest) {
+    
       Board b(4);
       b.board[0] = 3;
       b.board[1] = 1;
@@ -956,30 +950,26 @@
     </code></pre>
     Here is nqueens.cpp:
     <pre><code>
-    #include "nqueens.hpp"
-    
     #include <fstream>
     #include <stack>
+    
+    #include "nqueens.hpp"
     
     void NQueens::check_and_add_child(Node *parent, bool direction,
                                       std::stack<Node *> &stack) {
       /*ÜB10, Aufgabe 6, optional*/
       Board b = parent->get_configuration();
-    
       if (!b.has_next(direction)) {
         bdd.connect_false(parent, direction);
         return;
       }
     
       b.next(direction);
-    
       const bool valid = b.is_valid();
-    
       if (!valid) {
         bdd.connect_false(parent, direction);
         return;
       }
-    
       if (b.is_full()) {
         assert(valid);
         bdd.connect_true(parent, direction);
@@ -987,42 +977,38 @@
       } else {
         bool already_exists = false;
         Node *child = bdd.import_node(b, already_exists);
-    
-        // NEW ÜB10: adapted to std::set
-        // check if the node already exists after normalization
-        if (already_exists) {
-          // do nothing if the node already exists
-          return;
-        }
-    
-        stack.push(child);
+        if (!already_exists)
+          stack.push(child);
         bdd.connect(parent, child, direction);
       }
-    
       return;
     }
     
     void NQueens::construct_bdd() {
       /*ÜB10, Aufgabe 6*/
       Board b(size);
-      std::stack<Node *>
-          stack;  // specify the type of the element stored in the stack
+      std::stack<Node *> stack;
+    
       bool already_exists = false;
       Node *n = bdd.import_node(b, already_exists);
       stack.push(n);
+    
       int next_limit = size;
       int visited_nodes = 1;
+    
       while (!stack.empty()) {
         Node *n = stack.top();
         stack.pop();
+    
         check_and_add_child(n, false, stack);
         check_and_add_child(n, true, stack);
         visited_nodes += 2;
+    
         if (visited_nodes >= next_limit) {
           // NEW ÜB10
           /* ÜB 10, Aufgabe 11*/
           // This is new compared to the ÜB9
-          // we reduce the BDD, in increasingly large limits
+          // we reduce the BDD, in increasingly large limits.
           // I have not tried to optimize the numbers, but it seems to work more or
           // less
           //
@@ -1033,8 +1019,7 @@
       }
     
       bdd.normalize_bdd();
-    
-      /*
+    /*
       std::ofstream myfile;
       myfile.open("small_test_bdd_symmetry.txt");
       if (myfile.is_open()) {
@@ -1308,18 +1293,20 @@
     // next empty position (the column value was <= 0 and has now value > 0) or it
     // is not (the column value was <=0 and is now decreased by 1).
     class Board {
-     public:
+    public:
       Board() : size(0), board(nullptr) {}
     
       Board(int n) : size(n) {
         board = new int[n];
-        for (int i = 0; i < n; ++i) board[i] = 0;
+        for (int i = 0; i < n; ++i)
+          board[i] = 0;
       }
     
       Board(const Board &pos) {
         size = pos.size;
         board = new int[size];
-        for (int i = 0; i < size; ++i) board[i] = pos.board[i];
+        for (int i = 0; i < size; ++i)
+          board[i] = pos.board[i];
       }
     
       Board(Board &&pos) {
@@ -1333,7 +1320,8 @@
         delete[] board;
         size = pos.size;
         board = new int[size];
-        for (int i = 0; i < size; ++i) board[i] = pos.board[i];
+        for (int i = 0; i < size; ++i)
+          board[i] = pos.board[i];
         return *this;
       }
     
@@ -1348,9 +1336,11 @@
       ~Board() { delete[] board; }
     
       bool operator==(const Board &b) const {
-        if (size != b.size) return false;
+        if (size != b.size)
+          return false;
         for (int i = 0; i < size; ++i) {
-          if (board[i] != b.board[i]) return false;
+          if (board[i] != b.board[i])
+            return false;
         }
         return true;
       }
@@ -1393,7 +1383,7 @@
       /*NEW ÜB 10, Aufgabe 9*/
       bool operator<=(const Board &n) const;
     
-     private:
+    private:
       int size;
       int *board;
       FRIEND_TEST(BoardTest, nextTest);
