@@ -29,1432 +29,233 @@
     </nav>
     <h1><i class="fa fa-brain"></i> Literature</h1>
   </header>
-
-
   <main>
-    <pre>
-
-
-    AUFGABE 0:
-
-    Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
-    In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
-    Zwei Damen dÜrfen also niemals auf derselben Diagonale oder Linie sein. 
-    Das Problem besteht darin herauszufinden, wie viele Lösungen es gibt. Lösungen können
-    Symmetrien aufweisen, aber das interessiert uns erst einmal nicht.
-    In dem Folgende werden wir dieses Problem mit einer besonderen Darstellung lösen: BDDs (binary decision diagrams). 
-    Das ist ein Graph (im Moment: ein Baum) von Knoten. 
-    Jeder Knoten beschreibt eine Position einer Dame und stellt die Frage ¨Ist die Dame an der nächsten Stelle da?”. 
-    Jeder Knoten hat dann zwei Nachfolger : “wenn sie da ist” und “wenn sie nicht da ist”, daher auch der Name “If-Then-Else” fÜr jeden Knoten.
-    Es gibt zwei besondere Blätter: 0 (keine Lösung zum Damenproblem) und 1 (Lösung zum Damenproblem).
-    FÜr den Nachfolger einer Position stellen wir eine Dame in der ersten leeren Spalte (von links
-    nach rechts) und setzen sie dort ein oder setzen keine Dame an dieser Stelle.
-    Eine Position ist:
-      *voll* (full) wenn alle Damen auf dem Brett stehen;
-    *(in)korrekt* (valid), wenn (nicht) alle Regeln befolgt werden (also dass zwei Damen sind nehmen können)
-    Achtung Das leere Brett ist korrekt, aber nicht voll und deshalb auch keine Lösung zum Damenproblem.
-    
-    Auf dem `bild01.png` ist der Anfang von einem BDD gezeichnet. In jedem Knoten ist ein 4 × 4 Brett, bei dem d bedeutet, dass eine Dame dort ist, . bedeutet, dass dort keine Dame stehen kann. Die
-    vollen Pfeile bedeuten “Wenn die Dame dort ist” und die anderen “Wenn die Dame nicht dort
-    ist”.
-    Einer der Algorithmen, den wir hier implementieren wollen, ist folgender:
-    void baue_den_BDD_auf(die Größe n)
-    Stappel positionen_zu_bearbeiten := [keine_Damen] [Aufgabe 1]
-    BDD := leerer Graph [üB 8, Aufgabe 4]
-    Solange positionen_zu_bearbeiten nicht leer ist: [Aufgabe 1]
-    Position P := nimm eine Position aus positionen_zu_bearbeiten [Aufgabe 2]
-    for beide Nachfolger "ist da" und "ist nicht da" von der Position P
-    wenn der Nachfolger voll ist oder [Aufgabe 1]
-    der Nachfolger inkorrekt ist [Aufgabe 1]
-    setze 0 oder 1 als Nachfolger im BDD [üB 8, Aufgabe 4]
-    sonst
-    füge den Nachfolger im BDD und in positionen_zu_bearbeiten
-    verbinde den Nachfolger es mit der Position
-    
-    
-    Machen Sie nichts.
-    (Ende Aufgabe 0)
-    
-
-    Dieses Mal geht es darum, die Lösung zu verbessern, die in diese Dateien implementier wurde: 
-    `bdd.cpp`,`bdd.hpp`,`bddMain.cpp`,`bddTest.cpp`,`board.cpp`,`board.hpp`,`boardTest.cpp`,`node.cpp`,`node.hpp`,`nqueens.cpp`,`nqueens.hpp`,`nqueensMain.cpp`,`nqueensTest.cpp`,`stack.cpp`,`stack.hpp`,`stackTest.cpp`,
-    Suchen Sie in den Dateien nach `NEW` um die veränderungen zu sehen (und `TODO` um zu sehen wo Sie was implementieren müssen).
-    Hinweis 1: 
-    Die Aufgaben 9 und 10 gehören zusammen, aber die anderen sind unabhänging. 
-    Sie können die Implementierung in beliebiger Reihenfolge machen.
-    Hinweis 2: 
-    Das Damenproblem mit Größe 4 und die dot-Graphen sind sehr nützlich um zu schauen,ob auch alles abgefangen werden kann.
-    
-    
-    Aufgabe 9: 
-    ```
-    (board.[ch]pp)
-    Zuerst brauchen wir ein Ordnung über Positionen: kürzer Bretter sind kürzer als lange Bretter.
-    Wenn die Länge gleich ist, dann vergleichen Bretter wie im Wörterbuch (lexicographische Ordnung) von links nacht rechts (kleiner Zahlen bedeuten kleiner, wenn gleich wird sich das nächste Element angeschaut). 
-    Zum Beispiel ist `[2, 4]` kleiner als `[2, 5]` und `[2, 200]`.
-    
-    Implementieren Sie in der Datei `board.hpp` die Ordnungsoperatoren `<` und `<=`.
-    Als nächstes sollen symmetrische Positionen zusammengeführt werden. Die beiden relevanten
-    Symmetrien sind:
-        (A):
-        Die Dame steht immer oben in der ersten Hälfte der Spalte. 
-        Das Brett kann horizontal gespiegelt werden, wenn nötig.
-        (B):
-        Die Dame in der letzten Spalte hat immer eine niedrigere Position als die Dame in der ersten Spalte. 
-        Sonst kann das Schachbrett vertikal gespiegelt werden, um dasselbe Ergebnis zu erzielen.
-    
-    Ein Beispiel:
-            
-        ```
-        "| |d| | | \n"
-        "| | | |d| \n"
-        "|d| | | | \n"
-        "| | |d| | \n" ```
-
-        kann auch als wie folgt dargestelle werden:
-        ```
-        "| | |d| |\n"
-        "|d| | | |\n"
-        "| | | |d|\n"
-        "| |d| | |\n"
-        ```
-    
-    
-    Horizontal oder vertikal spielt hier keine Rolle, jedoch kann dies bei größeren Brettern der Fall sein.
-    Für eine funktionierende Symmetrie dürfen negative Werte nicht vorkommen. 
-    Zu Beginn sollten Sie in der Datei `board.cpp` die Funktion has_symmetries implementieren, welche überprüft, ob Symmetrien vorhanden sind. 
-    Im Anschluss sollten Sie die Spiegelungen in den Funktionen `horizontal_flip` und `vertical_flip` selbst implementieren. 
-    Zuletzt sollte die Funktion `symmetry_normalize` umgesetzt werden, welche die Position spiegelt, die einfach `horizontal_flip` und `vertical_flip` aufruft, falls gespiegelt werden muss.
-    
-    Die normalisierte Version von dem Brett ist die fundamentale Lösung von dem Problem.
-    
-    Weitere Details 
-    "Die Dame steht immer oben in der ersten Hälfte der Spalte. Das Brett kann horizontal
-    gespiegelt werden, wenn nötig" Was bedeutet diese Aussage zur horizontalen Symmetrie? Soll die Damen immer in der oberen Hälfte stehen, damit Symmetrie erreicht wird? 
-    Antwort: Andersrum: wir können annehmen dass die immer oben stehen. Falls die Dame unten steht, dann drehen wir das Brett um damit die wieder oben ist.
-    Wir machen die erste Dame (erste Spalte) in der oberen hälfte mit dem Argument dass es genau die selbe anzahl an lösungen hat wie die gespiegelte Version. Das heißt einam ausrechnen reicht.
-    Wir möchtest also nur die Brette im BDD haben wo:
-    `board[0] <= size/2`
-    und
-    `board[0] <= board[size - 1]`
-    
-    
-    ``` (Ende Aufgabe 9).
-
-
-
-
-    
-    Aufgabe 10:
-    ``` 
-    (Symmetrien nutzen, `bdd.cpp` und `nqueens.cpp`) 
-    
-    Statt eines Vectors für die Knoten verwenden wir ein `std::set`. 
-    Dadurch sind die Knoten intern sortiert, was die Suche mit find effizienter macht.
-    
-    Beim Importien prüfen wir nun, ob die Position Symmetrien aufweist. 
-    Ist dies der Fall, normalisieren wir die Positionen und suchen nach bereits vorhandenen Knoten. 
-    Falls ein Knoten bereits existiert, wird der Parameter `already_exists` gesetzt. 
-    Falls es keine Symmetrien gibt, dann brauchen wir nicht nach Symmetrien zu suchen.
-    
-    Passen Sie den Algorithmus in `construct_bdd` an, um Positionen zu vermeiden, die mehrfach berechnet werden müssen. 
-    Beachten Sie, dass diese änderung keine Auswirkungen auf die Anzahl der Lösungen hat, sondern nur die Anzahl der Pfade reduziert.
-    Hinweis: 
-        Wir nutzen hier ein Trick. Wir wissen das die symmetrischen Lösung erst nach der fundamentalen Lösung.
-    
-    weitere Details: 
-    Frage: was genau mit dem bool already_exists gemmacht werden soll?
-    Antwort: Wenn der knoten schon existiert (nach Normalisierung), dann musst du einfach der flag setzen, was wiederum bedeutet, dass du dann brauchst du ja nichts auf dem Stack pushen.
-    ``` (Ende Aufgabe 10).
-
-
-    Aufgabe 11:
-    ```
-    (Reducing BDD, `bdd.cpp`)
-    BDDs zielen darauf ab, die Knotenanzahl zu minimieren, indem sie Pfade fusionieren. 
-    Ist jeder Pfad mit "False"”" markiert, ersetzen wir den Knoten mit "False", um die Graphgröße zu reduzieren.
-    Um dies zu erreichen, werden wir eine rekursive Funktion mithilfe des postorder Tiefendurchlaufs
-    implementieren.
-    
-    ```
-    bool is_removable(node)
-    
-        // ist der node vielleicht ein Blatt vom BDD?
-        wenn knoten == true/false
-            return nicht löschbar / löschar
-        wenn knoten == nullptr
-            return nicht löschbar
-    
-        // anschauen ob die nachfolger gelöscht werden können, rekursiv:
-        is_removable(node->if_true)
-        is_removable(node->if_false)
-    
-        // jetzt schauen wir uns den Knoten selbst an
-        wenn ein nachfolger löschbar ist,
-            dann ersetze den jeweiligen nachfolger durch false.
-    
-        Wenn beide nachfolger gelöscht werden können,
-            dann markiere den Knoten als löschbar
-            return löschbar
-        
-        return nicht löschbar
-    ```
-    
-    
-    Um Knoten als löschbar zu markieren, nutzen wir den neuen Flag `to_delete` in der `Node` Klasse.
-    Implementieren Sie jetzt den Algorithmus in der Funktion `is_removable`.
-    Danach ändern Sie noch die Funktion `normalize_bdd` damit Knoten auch gelöscht werden aus nodes.
-    Hinweis: 
-        die Funktion wird schon in `nqueens` aufgerufen in immer größeren Abständen. 
-        Darum muss der Code auch `nullptr` unterstützen.
-    Hinweis 2: 
-        In einem BDD sollte man schauen ob die zwei Nachfolger von einem Knoten "true" sind. 
-        Wenn ja, kann der Knoten durch "true" ersetzt wird. Das kann aber bei uns nicht passieren.
-          
-
-    Weitere Details: 
-    Verständnisfrage bzgl. dem Teil vom Algorithmus :
-    ```
-    // ist der node vielleicht ein Blatt vom BDD?
-    wenn knoten == true/false
-    return nicht löschbar / löschar
-    ```
-    Ist mit true/false gemeint, ob es sich beim Knoten um einen true_node/false_node handelt? Oder ob to_delete von dem Knoten true/false ist?
-
-    Antwort: true_node und false_node. 
-    
-    ```(Ende Aufgabe 11).
-    
-    Aufgabe 12:
-    ```
-    (Fundamentale Lösungen, `bdd.cpp`)
-    Wikipedia unterscheidet zwischen den fundamentalen Lösungen (also solchen ohne Symmetrien) und denen mit Symmetrien. 
-    Letztere haben wir in Aufgabe 7 berechnet. 
-    Implementieren Sie nun die Funktion `count_fundamental_true_path()`, die jeden Knoten nur einmal zählt, um die fundamentalen Lösungen aufzuzählen. 
-    Verwenden Sie dafür den `to_delete`-Flag, um sich zu merken, dass Sie einen Knoten bereits besucht haben. Vergessen Sie nicht, alle Flags am Ende auf False zurückzusetzen!
-    ``` (Ende Aufgabe 12).
-    
-    Aufgabe 13:
-    ```
-    (Vererbung, `node.cpp` und `bdd.[ch]cpp`)
-    Wir wollen nun mit Vererbung arbeiten. Dazu nutzen wir die abstrakte Klasse `AbstractNode` (mit Id und Board). 
-    Von dieser Klasse erben zwei weitere Klassen: 
-        `Symmetrical_Node` (welche  die Knoten aus Aufgabe 12 mit Symmetrien repräsentiert), und 
-        `Dummy Node` (welche die Knoten aus der letzten Vorlesung repräsentiert, also genau die aus der Musterlösung).
-    
-    Bitte ändern Sie nun Ihre Implementierung so, dass beide Klassen von der Klasse `AbstractNode` erben und die `BDD`-Klasse nur noch Referenzen auf Objekte dieser allgemeinen Klasse speichert.
-    Es sollte nur noch in der `import_node`-Methode einen Unterschied geben, welche konkrete **Node**-Klasse genutzt wird.
-    ```
-    (Ende Aufgabe 13)
-
-    </pre>
-    This is Makefile:
-    <pre>
-      <code>
-        CXX = g++
-        CXXFLAGS=  --std=c++14 #-Wextra -Wall -pedantic
-        EXCLUDED = poly2.cpp
-        HEADERS = $(filter-out $(EXCLUDED), $(wildcard *.hpp))
-        OBJECTS = $(addsuffix .o, $(basename  $(filter-out $(EXCLUDED) %Test.cpp %Main.cpp, $(wildcard *.cpp))))
-        TESTLIBS = -lgtest -lgtest_main -lpthread
-        TEST_BINARIES = $(basename $(wildcard *[Tt]est.cpp))
-        
-        all: clean compile
-        
-        %.o: %.cpp $(HEADERS)
-          $(CXX) $(CXXFLAGS) -c $<
-        
-        %Main: %Main.cpp $(OBJECTS)
-          $(CXX) $(CXXFLAGS) -o $@ $^
-        
-        compile: bddMain nqueensMain
-        
-        %Test: %Test.o $(OBJECTS)
-          $(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)  $(TESTLIBS)
-        
-        test: $(TEST_BINARIES)
-          echo "$(TESTS)"
-          for test in `ls *Test` ; \
-          do \
-          ./$$test || (echo "failed test $$test" && exit 255) \
-          done
-        
-        clean:
-          rm -f small_test_bdd*.txt *Main *Test *.o 
-        
-        format:
-          clang-format -i *.cpp *.hpp
-        
-      </code>
-    </pre>
-    Here is bdd.cpp:
-    <pre><code>
-    #include "bdd.hpp"
-    
-    #include <stack>
-    #include <vector>
-    
-    #include "stack.hpp"
-    
-    /* ÜB 10, Aufgabe 10*/
-    Node *BDD::import_node(const Board &b, bool &already_exists) {
-      Board a = b;
-    
-      const bool not_normalized = a.has_symmetries();
-      Node *n;
-    
-      if (not_normalized) {
-        a.symmetry_normalize();
-        Node dummy(0, a);
-        auto it = nodes.find(&dummy);
-        if (it != nodes.end()) {
-          already_exists = true;
-          return *it;
-        } else {
-          already_exists = false;
-          n = new Node(fresh_id, a);
-        }
-      } else {
-        already_exists = false;
-        n = new Node(fresh_id, b);
-      }
-    
-      ++fresh_id;
-      nodes.insert(n);
-    
-      if (!root) root = n;
-      return n;
-    }
-    
-    void BDD::connect(Node *parent, Node *children, bool if_true) {
-      if (if_true)
-        parent->if_true = children;
-      else
-        parent->if_false = children;
-    }
-    
-    void BDD::connect_true(Node *parent, bool if_true) {
-      if (if_true)
-        parent->if_true = true_node;
-      else
-        parent->if_false = true_node;
-    }
-    
-    void BDD::connect_false(Node *parent, bool if_true) {
-      if (if_true)
-        parent->if_true = false_node;
-      else
-        parent->if_false = false_node;
-    }
-    
-    int BDD::count_true_path() const {
-      std::stack<Node *> stack;
-      int path = 0;
-      if (!root) return 0;
-      stack.push(root);
-      while (!stack.empty()) {
-        Node *b = stack.top();
-        stack.pop();
-        if (b == true_node) {
-          ++path;
-          continue;
-        }
-        if (b == false_node) continue;
-    
-        stack.push(b->if_true);
-        stack.push(b->if_false);
-      }
-    
-      return path;
-    }
-    
-    int BDD::count_fundamental_true_path() const {
-      std::stack<Node *> stack;
-      int path = 0;
-      if (!root) return 0;
-      stack.push(root);
-      while (!stack.empty()) {
-        Node *b = stack.top();
-        stack.pop();
-        if (b == true_node) {
-          ++path;
-          continue;
-        }
-        if (b == false_node || b->to_delete) continue;
-        b->to_delete = true;
-        stack.push(b->if_true);
-        stack.push(b->if_false);
-      }
-      for (auto &n : nodes) {
-        n->to_delete = false;
-      }
-      return path;
-    }
-    
-    std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
-      std::vector<Node *> queue;
-      if (bdd.root) queue.push_back(bdd.root);
-      const std::string true_name("true");
-      const std::string false_name("false");
-    
-      stream << "digraph BDD\n {";
-    
-      for (const auto &node : bdd.nodes) {
-        assert(!node->to_delete);
-        stream << node->id << "[fontname=\"Comic Mono\",label= \"" << *node
-               << "\"]\n";
-      }
-    
-      for (const auto &b : bdd.nodes) {
-        stream << b->id << " -> ";
-        if (b->if_true != bdd.true_node && b->if_true != bdd.false_node)
-          stream << b->if_true->id << ";\n";
-        else
-          stream << (b->if_true == bdd.true_node ? true_name : false_name) << ";\n";
-    
-        // connect the current node to its false descendant
-        stream << b->id << " -> ";
-        if (b->if_false != bdd.true_node && b->if_false != bdd.false_node)
-          stream << b->if_false->id;
-        else
-          stream << (b->if_false == bdd.true_node ? true_name : false_name);
-        stream << "[style=dotted]"
-               << ";\n";
-      }
-    
-      stream << "}";
-    
-      return stream;
-    }
-    
-    // We implement a recursive post-order traversal of the BDD
-    bool BDD::is_removable(Node *b) {
-      /*NEW ÜB 10, Aufgabe 11*/
-      //
-      if (b == true_node || b == false_node || b == nullptr) return false;
-    
-      bool if_true_removable = is_removable(b->if_true);
-      bool if_false_removable = is_removable(b->if_false);
-    
-      if (if_true_removable) b->if_true = false_node;
-      if (if_false_removable) b->if_false = false_node;
-    
-      if (if_true_removable && if_false_removable) {
-        b->to_delete = true;
-        return true;
-      }
-    
-      return false;
-    }
-    
-    // remove useless parts of the entire BDD, by checking if the root should be removed
-    void BDD::normalize_bdd() {
-      /*NEW ÜB 10, Aufgabe 11*/
-      bool root_removable = is_removable(root);
-    
-      if (root_removable) root = false_node;
-    
-      for (auto it = nodes.begin(); it != nodes.end();) {
-        Node *n = *it;
-        if (n->to_delete) {
-          delete n;
-          it = nodes.erase(it);
-        } else {
-          ++it;
-        }
-      }
-    }
-    </code></pre>
-    Here is bddMain.cpp:
-    <pre><code>
-    #include "bdd.hpp"
-    
-    int main() { BDD bdd; }</code></pre>
-    Here is bddTest.cpp:
-    <pre><code>
-    #include <fstream>
-    #include <gtest/gtest.h>
-    #include <iostream>
-    
-    #include "bdd.hpp"
-    
-    // In this test, we construct a simple BDD with boards of length 4 and we write
-    // the corresponding graph to a file.
-    TEST(BDDTest, basicTest) {
-      // create two distinct nodes a and b
-      Board a(4);
-      a.next(true);
-      Board b(4);
-      BDD bdd;
-    
-      bool already_exists = false;
-      Node *a1 = bdd.import_node(a, already_exists);
-    
-      ASSERT_TRUE(a.has_next(true));
-      a.next(true);
-      Node *a2 = bdd.import_node(a, already_exists);
-    
-      ASSERT_TRUE(b.has_next(false));
-      b.next(false);
-    
-      Node *b2 = bdd.import_node(b, already_exists);
-      bdd.connect(a1, a2, true);
-      bdd.connect(a1, b2, false);
-      ASSERT_EQ(a1->if_true, a2);
-      ASSERT_EQ(a1->if_false, b2);
-      ASSERT_EQ(bdd.root, a1);
-    
-      bdd.connect_true(a2, true);
-      bdd.connect_true(a2, false);
-    
-      bdd.connect_true(b2, true);
-      bdd.connect_false(b2, false);
-    
-      ASSERT_EQ(bdd.count_true_path(), 3);
-    
-      std::ofstream myfile;
-      myfile.open("small_test_bdd.txt");
-      if (myfile.is_open()) {
-        myfile << bdd;
-        myfile.close();
-      }
-    }
-    
-    int main() {
-      testing::InitGoogleTest();
-      return RUN_ALL_TESTS();
-    }
-    </code></pre>
-    Here is board.cpp:
-    <pre><code>
-    #include "board.hpp"
-    
-    #include <assert.h>
-    
-    #include <string>
-    
-    bool Board::has_next(bool taken) const {
-      int position_to_change = -1;
-      for (int i = 0; i < size; ++i) {
-        if (board[i] <= 0) {
-          position_to_change = i;
-          break;
-        }
-      }
-    
-      if (position_to_change == -1) return false;
-    
-      const int value = board[position_to_change];
-    
-      if (!taken && size == -value + 1) return false;
-    
-      return true;
-    }
-    
-    void Board::next(bool taken) {
-      int position_to_change = -1;
-      for (int i = 0; i < size; ++i) {
-        if (board[i] <= 0) {
-          position_to_change = i;
-          break;
-        }
-      }
-    
-      assert(position_to_change != -1);
-    
-      const int value = board[position_to_change];
-    
-      assert(taken || size != value - 1);
-    
-      if (taken)
-        board[position_to_change] = -value + 1;
-      else
-        board[position_to_change] -= 1;
-    }
-    
-    std::ostream &operator<<(std::ostream &stream, const Board &board) {
-      for (int line = 0; line < board.size; ++line) {
-        stream << "|";
-        for (int row = 0; row < board.size; ++row) {
-          if (board.board[row] - 1 == line)
-            stream << "d";
-          else if (board.board[row] < 0 && line <= -board.board[row] - 1)
-            stream << ".";
-          else
-            stream << " ";
-          stream << "|";
-        }
-        stream << "\n";
-      }
-      return stream;
-    }
-    
-    // Checks if a position is valid: two queens are (i) on the same row if they
-    // have the position and (ii) are on the same diagonal if the distance is the
-    // same as the row distance.
-    bool Board::is_valid() const {
-      for (int i = 0; i < size; ++i) {
-        if (board[i] < 0) continue;
-        if (board[i] > 0) {
-          for (int j = 0; j < size; ++j) {
-            if (i == j || board[j] <= 0) continue;
-            if (board[i] == board[j]) {
-              return false;
-            }
-            if (std::abs(board[i] - board[j]) == std::abs(i - j)) return false;
-          }
-        }
-      }
-    
-      return true;
-    }
-    
-    bool Board::is_full() const {
-      for (int i = 0; i < size; ++i) {
-        if (board[i] <= 0) return false;
-      }
-    
-      return true;
-    }
-    bool Board::has_symmetries() const {
-      int first = -1;
-      int last = -1;
-      for (int i = 0; i < size; ++i) {
-        if (first == -1 && board[i] > 0) {
-          first = board[i];
-        }
-        if (last == -1 && board[size - i - 1] > 0) {
-          last = board[size - i - 1];
-        }
-        if (first != -1 && last != -1) break;
-      }
-      if (first == -1 || last == -1) return false;
-      if (last >= first) {
-        return false;
-      }
-    
-      bool need_horizontal_flip = false;
-      for (int i = 0; i < size; ++i) {
-        assert(board[i] >= 0);
-        if (board[i] == 0) continue;
-        if (board[i] > size / 2 + 1 ||
-            (board[i] == size / 2 + 1 && size % 2 == 0)) {
-          return false;
-        }
-      }
-    
-      return true;
-    }
-    
-    void Board::horizontal_flip() {
-      for (int i = 0; i < size; ++i) {
-        if (board[i] <= 0) continue;
-        board[i] = size + 1 - board[i];
-      }
-    }
-    
-    void Board::vertical_flip() {
-      for (int i = 0; i < size / 2; ++i) {
-        std::swap(board[i], board[size - i - 1]);
-      }
-    }
-    
-    void Board::symmetry_normalize() {
-      if (!has_symmetries()) return;
-      horizontal_flip();
-      if (!has_symmetries()) return;
-      vertical_flip();
-    }
-    
-    bool Board::operator<(const Board &n) const {
-      if (size != n.size) return size < n.size;
-      for (int i = 0; i < size; ++i) {
-        if (board[i] != n.board[i]) return board[i] < n.board[i];
-      }
-      return false;
-    }
-    bool Board::operator<=(const Board &n) const { return *this < n || *this == n; }
-    </code></pre>
-    Here is boardTest.cpp:
-    <pre><code>
-    #include <gtest/gtest.h>
-    
-    #include "board.hpp"
-    
-    TEST(BoardTest, nextTest) {
-      Board b(3);
-      b.board[0] = -1;
-    
-      ASSERT_TRUE(b.has_next(true));
-    
-      b.next(true);
-      ASSERT_EQ(b.board[0], 2);
-    
-      ASSERT_TRUE(b.has_next(false));
-      b.next(false);
-      ASSERT_EQ(b.board[0], 2);
-      ASSERT_EQ(b.board[1], -1);
-    
-      ASSERT_TRUE(b.has_next(false));
-      b.next(false);
-      ASSERT_EQ(b.board[0], 2);
-      ASSERT_EQ(b.board[1], -2);
-    
-      ASSERT_FALSE(b.has_next(false));
-    
-      ASSERT_TRUE(b.has_next(true));
-      b.next(true);
-      ASSERT_EQ(b.board[0], 2);
-      ASSERT_EQ(b.board[1], 3);
-      ASSERT_EQ(b.size, 3);
-    
-      ASSERT_TRUE(b.has_next(true));
-      b.next(true);
-      ASSERT_EQ(b.board[0], 2);
-      ASSERT_EQ(b.board[1], 3);
-      ASSERT_EQ(b.board[2], 1);
-      ASSERT_EQ(b.size, 3);
-    }
-    
-    TEST(BoardTest, stringTest) {
-      Board b(3);
-      b.board[0] = 3;
-      b.board[1] = 1;
-      b.board[2] = 2;
-    
-      std::stringstream b_position;
-      b_position << b;
-      ASSERT_EQ(b_position.str(),
-                "| |d| |\n"
-                "| | |d|\n"
-                "|d| | |\n");
-      b.board[0] = -3;
-      b.board[1] = 1;
-      b.board[2] = 2;
-    
-      std::stringstream c_position;
-      c_position << b;
-      ASSERT_EQ(c_position.str(),
-                "|.|d| |\n"
-                "|.| |d|\n"
-                "|.| | |\n");
-    }
-    
-    TEST(BoardTest, validTest) {
-      Board b(4);
-      b.board[0] = 3;
-      b.board[1] = 1;
-      b.board[2] = 4;
-      b.board[3] = 2;
-      ASSERT_TRUE(b.is_valid());
-    
-      b.board[3] = -2;
-      ASSERT_TRUE(b.is_valid());
-    
-      b.board[3] = 1;
-      ASSERT_FALSE(b.is_valid());
-    
-      b.board[0] = 1;
-      b.board[1] = -1;
-      b.board[2] = -4;
-      b.board[3] = 4;
-      ASSERT_FALSE(b.is_valid());
-    
-      b.board[0] = 4;
-      b.board[1] = 2;
-      b.board[2] = 0;
-      b.board[3] = 0;
-      ASSERT_TRUE(b.is_valid());
-    
-      b.board[0] = 4;
-      b.board[1] = 1;
-      b.board[2] = 0;
-      b.board[3] = 0;
-      ASSERT_TRUE(b.is_valid());
-    }
-    
-    TEST(BoardTest, flipTest) {
-      Board b(4);
-      b.board[0] = 3;
-      b.board[1] = 1;
-      b.board[2] = 4;
-      b.board[3] = 2;
-    
-      // ASSERT_TRUE(b.has_symmetries());
-      ASSERT_FALSE(b.has_symmetries());
-      b.horizontal_flip();
-    
-      ASSERT_EQ(b.board[0], 2);
-      ASSERT_EQ(b.board[1], 4);
-      ASSERT_EQ(b.board[2], 1);
-      ASSERT_EQ(b.board[3], 3);
-    
-      ASSERT_FALSE(b.has_symmetries());
-    
-      b.vertical_flip();
-      ASSERT_EQ(b.board[0], 3);
-      ASSERT_EQ(b.board[1], 1);
-      ASSERT_EQ(b.board[2], 4);
-      ASSERT_EQ(b.board[3], 2);
-    
-      ASSERT_TRUE(b.has_symmetries());
-    
-      b.symmetry_normalize();
-    
-      ASSERT_EQ(b.board[0], 2);
-      ASSERT_EQ(b.board[1], 4);
-      ASSERT_EQ(b.board[2], 1);
-      ASSERT_EQ(b.board[3], 3);
-    
-      b.vertical_flip();
-      ASSERT_EQ(b.board[0], 3);
-      ASSERT_EQ(b.board[1], 1);
-      ASSERT_EQ(b.board[2], 4);
-      ASSERT_EQ(b.board[3], 2);
-    
-      b.board[3] = 0;
-      ASSERT_TRUE(b.has_symmetries());
-    
-      b.board[1] = -3;
-      ASSERT_FALSE(b.has_symmetries());
-    
-      b.board[1] = 1;
-      b.board[4] = 0;
-      ASSERT_TRUE(b.has_symmetries());
-    
-      b.board[0] = 3;
-      b.board[1] = 0;
-      b.board[2] = 0;
-      b.board[3] = 0;
-    
-      ASSERT_TRUE(b.has_symmetries());
-    }
-    
-    TEST(BoardTest, orderTest) {
-      Board b(4);
-      b.board[0] = 3;
-      b.board[1] = 1;
-      b.board[2] = 4;
-      b.board[3] = 2;
-    
-      Board c(4);
-      c.board[0] = 3;
-      c.board[1] = 1;
-      c.board[2] = 4;
-      c.board[3] = 2;
-    
-      ASSERT_LE(b, c);
-      ASSERT_FALSE(b < c);
-    
-      c.board[0] = -1;
-      ASSERT_LE(c, b);
-      ASSERT_LT(c, b);
-    
-      c.board[0] = 4;
-      c.board[3] = 3;
-      ASSERT_LE(b, c);
-      ASSERT_LT(b, c);
-    
-      Board e(0);
-    
-      ASSERT_LE(e, b);
-      ASSERT_LT(e, b);
-    }
-    
-    int main() {
-      testing::InitGoogleTest();
-      return RUN_ALL_TESTS();
-    }
-    </code></pre>
-    Here is node.cpp:
-    <pre><code>
-    #include "node.hpp"
-    
-    std::ostream &operator<<(std::ostream &stream, const Node &node) {
-      stream << node.configuration;
-      return stream;
-    }
-    </code></pre>
-    Here is nqueens.cpp:
-    <pre><code>
-    #include "nqueens.hpp"
-    
-    #include <fstream>
-    #include <stack>
-    
-    void NQueens::check_and_add_child(Node *parent, bool direction,
-                                      std::stack<Node *> &stack) {
-      /*ÜB10, Aufgabe 6, optional*/
-      Board b = parent->get_configuration();
-    
-      if (!b.has_next(direction)) {
-        bdd.connect_false(parent, direction);
-        return;
-      }
-    
-      b.next(direction);
-    
-      const bool valid = b.is_valid();
-    
-      if (!valid) {
-        bdd.connect_false(parent, direction);
-        return;
-      }
-    
-      if (b.is_full()) {
-        assert(valid);
-        bdd.connect_true(parent, direction);
-        return;
-      } else {
-        bool already_exists = false;
-        Node *child = bdd.import_node(b, already_exists);
-    
-        if (already_exists) {
-          return;
-        }
-    
-        stack.push(child);
-        bdd.connect(parent, child, direction);
-      }
-    
-      return;
-    }
-    
-    void NQueens::construct_bdd() {
-      /*ÜB10, Aufgabe 6*/
-      Board b(size);
-      std::stack<Node *> stack;
-      bool already_exists = false;
-      Node *n = bdd.import_node(b, already_exists);
-      stack.push(n);
-      int next_limit = size;
-      int visited_nodes = 1;
-      while (!stack.empty()) {
-        Node *n = stack.top();
-        stack.pop();
-        check_and_add_child(n, false, stack);
-        check_and_add_child(n, true, stack);
-        visited_nodes += 2;
-        if (visited_nodes >= next_limit) {
-          next_limit *= 2;
-          bdd.normalize_bdd();
-        }
-      }
-    
-      bdd.normalize_bdd();
-    
-      // std::ofstream myfile;
-      // myfile.open("small_test_bdd_symmetry.txt");
-      // if (myfile.is_open()) {
-      //   myfile << bdd;
-      //   myfile.close();
-      // }
-    }
-    </code></pre>
-    Here is nqueensMain.cpp:
-    <pre><code>
-    #include "nqueens.hpp"
-    
-    int main() {
-      NQueens queens(4);
-      std::cout << queens.count_solutions();
-    }
-    </code></pre>
-    Here is nqueensTest.cpp:
-    <pre><code>
-    #include <gtest/gtest.h>
-    
-    #include "nqueens.hpp"
-    
-    int create_nqueens_and_count(int n) {
-      NQueens queens(n);
-      return queens.count_solutions();
-    }
-    
-    int create_nqueens_and_count_fundamental(int n) {
-      NQueens queens(n);
-      return queens.count_fundamental_solutions();
-    }
-    
-    TEST(NQueensTest, ValueTest) {
-      ASSERT_EQ(create_nqueens_and_count(4), 2);
-      ASSERT_EQ(create_nqueens_and_count(5), 10);
-      ASSERT_EQ(create_nqueens_and_count(6), 4);
-      ASSERT_EQ(create_nqueens_and_count(7), 40);
-      ASSERT_EQ(create_nqueens_and_count(8), 92);
-    }
-    TEST(NQueensTest, FundamentalSolutionsTest) {
-      ASSERT_EQ(create_nqueens_and_count_fundamental(4), 1);
-      ASSERT_EQ(create_nqueens_and_count_fundamental(5), 2);
-      ASSERT_EQ(create_nqueens_and_count_fundamental(6), 1);
-      ASSERT_EQ(create_nqueens_and_count_fundamental(7), 6);
-      ASSERT_EQ(create_nqueens_and_count_fundamental(8), 12);
-    }
-    
-    int main() {
-      testing::InitGoogleTest();
-      return RUN_ALL_TESTS();
-    }
-    </code></pre>
-    Here is stack.cpp:
-    <pre><code>
-    #include "stack.hpp"
-    #include "board.hpp"
-    #include "node.hpp"
-    
-    template <typename T> void Stack<T>::reserve(int n) {
-      if (n < capacity)
-        return;
-    
-      capacity = n;
-      T *nb = new T[n];
-      for (int i = 0; i < size; ++i)
-        nb[i] = stack[i];
-    
-      delete[] stack;
-      stack = nb;
-    }
-    
-    template <typename T> void Stack<T>::push(const T &board) {
-      if (size + 1 >= capacity)
-        reserve(2 * capacity);
-    
-      assert(size < capacity);
-      stack[size] = std::move(board);
-      ++size;
-    }
-    
-    template <typename T> void Stack<T>::pop() {
-      if (!size)
-        return;
-      --size;
-    }
-    
-    template <typename T> T Stack<T>::top() const { return stack[size - 1]; }
-    
-    template <typename T> bool Stack<T>::empty() const { return size == 0; }
-    
-    // instantiation
-    template class Stack<Node *>;
-    template class Stack<Board *>;
-    template class Stack<Board>;</code></pre>
-    Here is stackTest.cpp:
-    <pre><code>
-    #include <gtest/gtest.h>
-    
-    #include "board.hpp"
-    #include "stack.hpp"
-    
-    TEST(StackTest, pushTest) {
-      const Board a(4);
-      const Board b(5);
-      Stack<Board> s;
-    
-      ASSERT_TRUE(s.empty());
-      s.push(a);
-      assert(s.stack[0] == a);
-    
-      ASSERT_FALSE(s.empty());
-      s.push(b);
-    
-      assert(s.stack[0] == a);
-      ASSERT_EQ(s.stack[0], a);
-      ASSERT_EQ(s.stack[1], b);
-    
-      const Board c = s.top();
-      ASSERT_EQ(b, c);
-      s.pop();
-    
-      const Board d = s.top();
-      ASSERT_EQ(d, a);
-      s.pop();
-    
-      ASSERT_TRUE(s.empty());
-      s.pop();
-      ASSERT_TRUE(s.empty());
-    }
-    
-    int main() {
-      testing::InitGoogleTest();
-      return RUN_ALL_TESTS();
-    }
-    </code></pre>
-    Here is bdd.hpp:
-    <pre><code>
-    #ifndef BLATT_BDD_BDD
-    #define BLATT_BDD_BDD
-    
-    #include <gtest/gtest.h>
-    
-    #include <ostream>
-    #include <vector>
-    
-    #include "node.hpp"
-    
-    // This is a very simple implementation of a BDD (binary decision diagram).
-    //
-    // There are two special nodes `true_node' and `false_node' that represent 1 and
-    // 0 of the BDD.
-    //
-    // The interface is very simple in order to construct the BDD:
-    //
-    //  - it is possible to import a Board. This returns the node as imported by the
-    //  BDD
-    //
-    //  - Nodes can be connected via `connect_true' and `connect_false' (for
-    //  connection to true or
-    //  - false) and `connect' to connect two nodes
-    //
-    //
-    // Internally, all nodes are stored in the `nodes' vector in order do be able to
-    // destray all the nodes.
-    //
-    // NEW: internally we use the to_delete flag in nodes, but the invariant that is
-    // true (except within functions) is that it is always set to false.
-    class BDD {
-     public:
-      BDD() : fresh_id(0), root(nullptr) {}
-    
-      BDD(const BDD &) = delete;
-      BDD(BDD &&) = delete;
-    
-      // This function imports a Board and returns a node. The successors of the
-      // nodes are set to the false node automatically.
-      //
-      // NEW ÜB10
-      // If the node has symmetries, we check if the fundamental node is already
-      // present and set the already_exists parameter.
-      Node *import_node(const Board &b, bool &already_exists);
-    
-      // destructor
-      ~BDD() {
-        for (auto &n : nodes) {
-          delete n;
-        }
-      }
-    
-      friend class Node;
-    
-      // connect two nodes together
-      // overwriting any existing relationships.
-      void connect(Node *parent, Node *children, bool if_true);
-    
-      // connect the node to the true or false node assuming that parent is valid
-      // pointer to a node (neither true nor false)
-      void connect_true(Node *parent, bool if_true);
-      void connect_false(Node *parent, bool if_true);
-    
-      // counts the number of paths leading to true
-      int count_true_path() const;
-    
-      // count the number of fundamental paths leading to true
-      /*NEW ÜB 10, Aufgabe 12*/
-      int count_fundamental_true_path() const;
-    
-      // Write the graph as a dot (graphviz) file.
-      friend std::ostream &operator<<(std::ostream &stream, const BDD &bdd);
-    
-      // normalization of the BDD by getting rid of of the paths to false
-      void normalize_bdd();
-    
-     private:
-      // we number of nodes starting from 0 upwards.
-      int fresh_id;
-    
-      // Root node. If our BDD contains any node, then one of them is the root file.
-      Node *root;
-    
-      // This are two specific nodes, true or false. These nodes have a specific
-      // meaning and should not be seen as nodes that can be dereferenced.
-      Node *const true_node = (Node *)1;
-      Node *const false_node = (Node *)2;
-    
-      // checks if all the nodes are going to false. In this case, the function
-      // returns true and replace the children of the parameter by false_node.
-      bool is_removable(Node *);
-    
-      struct NodeCmp {
-        bool operator()(Node *const &lhs, Node *const &rhs) const {
-          return *lhs < *rhs;
-        }
-      };
-    
-      // A list of all nodes within the class sorted.  It is necessary to define the
-      // ordering. Otherwise, the ordering on pointers is used (very painful
-      // debugging experience).
-      // NEW ÜB10: changed from an unsorted vector to a (sorted) set for efficient
-      // search.
-      std::set<Node *, NodeCmp> nodes;
-    
-      FRIEND_TEST(BDDTest, basicTest);
-    };
-    
-    #endif</code></pre>
-    Here is board.hpp:
-    <pre><code>
-    #ifndef BLATT_BDD_BOARD
-    #define BLATT_BDD_BOARD
-    
-    #include <gtest/gtest.h>
-    
-    #include <cstdio>
-    #include <string>
-    
-    // Representation of a configuration for our n-queens
-    // problem and iteration over all positions.
-    //
-    // Our class internally uses an array of int of a given size, where each int
-    // means:
-    //   - == 0 no queens in this column
-    //   - <0 no queen up to that position
-    //   - >0 the only queen is at that position.
-    //
-    // The board is already tailored toward our needs by disallowing 2 queens in
-    // this column. We also are using a fixed size.
-    //
-    // For each board, there are at most two successors: either the queen is at the
-    // next empty position (the column value was <= 0 and has now value > 0) or it
-    // is not (the column value was <=0 and is now decreased by 1).
-    class Board {
-     public:
-      Board() : size(0), board(nullptr) {}
-    
-      Board(int n) : size(n) {
-        board = new int[n];
-        for (int i = 0; i < n; ++i) board[i] = 0;
-      }
-    
-      Board(const Board &pos) {
-        size = pos.size;
-        board = new int[size];
-        for (int i = 0; i < size; ++i) board[i] = pos.board[i];
-      }
-    
-      Board(Board &&pos) {
-        size = pos.size;
-        board = pos.board;
-        pos.size = 0;
-        pos.board = nullptr;
-      }
-    
-      Board operator=(const Board &pos) {
-        delete[] board;
-        size = pos.size;
-        board = new int[size];
-        for (int i = 0; i < size; ++i) board[i] = pos.board[i];
-        return *this;
-      }
-    
-      Board operator=(Board &&pos) {
-        size = pos.size;
-        board = pos.board;
-        pos.size = 0;
-        pos.board = nullptr;
-        return *this;
-      }
-    
-      ~Board() { delete[] board; }
-    
-      bool operator==(const Board &b) const {
-        if (size != b.size) return false;
-        for (int i = 0; i < size; ++i) {
-          if (board[i] != b.board[i]) return false;
-        }
-        return true;
-      }
-    
-      // checks if this position has a next position
-      bool has_next(bool taken) const;
-    
-      // changes the current position to the next one
-      // assuming that there is one
-      void next(bool taken);
-    
-      // give a board as a string with '|' separating the cells with 'D' for queens
-      // and when there is no queen, it prints '.' for positions where there is no
-      // queen. For example |D|.|_|
-      // |_|.|_|
-      // |_| |_|
-      // here the queen in the second column can only be at the very bottomx.
-      friend std::ostream &operator<<(std::ostream &stream, const Board &board);
-    
-      // checks if the current board is compatible with the rules
-      bool is_valid() const;
-    
-      // checks if the current board is compatible with the rules
-      bool is_full() const;
-    
-      bool has_symmetries() const;
-      void symmetry_normalize();
-    
-      // precondition: no negative numbers!
-      void horizontal_flip();
-      void vertical_flip();
-    
-      // Shortlex order on the elements on the board.
-      // Negative entries are considered as negative numbers.
-      /*NEW ÜB 10, Aufgabe 9*/
-      bool operator<(const Board &n) const;
-    
-      // Shortlex order on the elements on the board
-      // Negative entries are considered as negative numbers.
-      /*NEW ÜB 10, Aufgabe 9*/
-      bool operator<=(const Board &n) const;
-    
-     private:
-      int size;
-      int *board;
-      FRIEND_TEST(BoardTest, nextTest);
-      FRIEND_TEST(BoardTest, stringTest);
-      FRIEND_TEST(BoardTest, validTest);
-      FRIEND_TEST(BoardTest, flipTest);
-      FRIEND_TEST(BoardTest, orderTest);
-    };
-    
-    #endif
-    </code></pre>
-    Here is node.hpp:
-    <pre><code>
-    #ifndef BLATT_BDD_NODE
-    #define BLATT_BDD_NODE
-    
-    #include <gtest/gtest.h>
-    
-    #include "board.hpp"
-    
-    // Node in the BDD
-    //
-    // It contains 2 informations, the position and an id to help debugging
-    // We initialize the successor to be the null pointer.
-    class Node {
-    public:
-      // NEW ÜB10: make it clear that initialized with nullptr
-      Node(int fresh_id, const Board &config)
-      : id(fresh_id), configuration(config), if_true(nullptr), if_false (nullptr) {}
-      Node(int fresh_id, Board &&config)
-      : id(fresh_id), configuration(config), if_true(nullptr), if_false (nullptr) {}
-    
-    public:
-      // identifier used whenever we need a number or something to distinguish it
-      // from other nodes.
-      const int id;
-    
-      // brind the content of
-      friend std::ostream &operator<<(std::ostream &stream, const Node &bdd);
-    
-      // returns a copy of the configuration
-      Board get_configuration() const { return configuration; };
-    
-    private:
-      Board configuration;
-    
-    public:
-      // connection to the two successors when taken and when not taken
-      Node *if_true;
-      Node *if_false;
-    
-      // to_delete to indicate some information on the node
-      // we use this in various cases
-      // by default the value is false
-      bool to_delete = false;
-    
-      bool operator==(const Node &n) const {
-        return configuration == n.configuration;
-      }
-    
-      bool operator<(const Node &n) const {
-        return configuration < n.configuration;
-      }
-    
-      bool operator<=(const Node &n) const {
-        return configuration <= n.configuration;
-      }
-    };
-    
-    #endif</code></pre>
-    Here is nqueens.hpp:
-    <pre><code>
-    #ifndef BLATT_BDD_NQUEENS
-    #define BLATT_BDD_NQUEENS
-    
-    #include <stack>
-    
-    #include "bdd.hpp"
-    
-    class NQueens {
-    public:
-      NQueens(int n) : size(n) { construct_bdd(); }
-    
-      // counts the number of solutions to the nqueens problems.
-      // Assumes that the construction is finished
-      int count_solutions() { return bdd.count_true_path(); }
-    
-      // counts the number of fundamental solutions to the nqueens problems.
-      // Assumes that the construction is finished
-      /*NEW ÜB 10, Aufgabe 12*/
-      int count_fundamental_solutions() {
-        return bdd.count_fundamental_true_path();
-      }
-    
-    private:
-      // construct the internal representation of the n-queens problem
-      void construct_bdd();
-    
-      // connect parent to its child (true or false depending on direction) and
-      // pushing the node to the stack
-      void check_and_add_child(Node *parent, bool direction,
-                               std::stack<Node *> &stack);
-      int size;
-      BDD bdd;
-    };
-    #endif</code></pre>
-    Here is stack.hpp:
-    <pre><code>
-    #ifndef BLATT_BDD_STACK
-    #define BLATT_BDD_STACK
-    
-    #include <gtest/gtest.h>
-    
-    #include "board.hpp"
-    
-    template <typename T> class Stack {
-    public:
-      Stack() : size(0), capacity(1), stack(nullptr) {}
-    
-      ~Stack() { delete[] stack; }
-    
-      // push the element to the stack
-      void push(const T &pos);
-    
-      // last element added
-      T top() const;
-    
-      // deletes the last inserted element of the stack
-      void pop();
-    
-      // checks if the stack is empty
-      bool empty() const;
-    
-      // resize to match the capacity if required
-      void reserve(int n);
-    
-      const T operator[](int n) const { return stack[n]; }
-    
-      int number_of_elements() const { return size; }
-    
-    private:
-      int size;
-      int capacity;
-      T *stack;
-    
-      FRIEND_TEST(StackTest, pushTest);
-    };
-    
-    #endif
-    </code></pre>
-    
+    <section>
+      <div>
+        <ul>
+          <li>Allman JM, Watson KK, Tetreault NA, Hakeem AY. Intuition and autism: a possible role for Von
+            Economo neurons. Trends Cogn Sci. 2005; 9:367–73. [PubMed: 16002323]</li>
+          <li>Armstrong KM, Chang MH, Moore T. Selection and maintenance of spatial information by frontal eye
+            field neurons. J Neurosci. 2009; 29:15621–29. [PubMed: 20016076]</li>
+          <li>Aston-Jones G, Cohen JD. An integrative theory of locus coeruleus-norepinephrine function:
+            adaptive gain and optimal performance. Annu Rev Neurosci. 2005; 28:403–50. [PubMed: 16022602]
+          </li>
+          <li>Bakermans-Kranenburg MJ, Van IJzendoorn MH. Differential susceptibility to rearing environment
+            depending on dopamine-related genes: new evidence and a meta-analysis. Dev Psychopathol. 2011;
+            23:39–52. [PubMed: 21262038]</li>
+          <li>Bakermans-Kranenburg MJ, Van IJzendoorn MH, Pijlman FT, Mesman J, Juffer F. Experimental
+            evidence for differential susceptibility: dopamine D4 receptor polymorphism (DRD4 VNTR)
+            moderates intervention effects on toddlers’ externalizing behavior in a randomized controlled
+            trial. Dev Psychol. 2008; 44:293–300. [PubMed: 18194028]</li>
+          <li>Beane M, Marrocco RT. Norepinephrine and acetylcholine mediation of the components of reflexive
+            attention: implications for attention deficit disorders. Prog Neurobiol. 2004; 74:167–81.
+            [PubMed: 15556286]</li>
+          <li>Beauregard M, Lévesque J, Bourgouin P. Neural correlates of conscious self-regulation of
+            emotion. J Neurosci. 2001; 21:RC165. [PubMed: 11549754]</li>
+          <li>Beckmann M, Johansen-Berg H, Rushworth MFS. Connectivity-based parcellation of human cingulate
+            cortex and its relation to functional specialization. J Neurosci. 2009; 29:1175–90. [PubMed:
+            19176826]</li>
+          <li>Belsky J, Pluess M. Beyond diathesis stress: differential susceptibility to environmental
+            influences. Psychol Bull. 2009; 135:885–908. [PubMed: 19883141]</li>
+          <li>Berger A, Tzur G, Posner MI. Infant brains detect arithmetic errors. Proc Natl Acad Sci USA.
+            2006; 103:12649–53. [PubMed: 16894149]</li>
+          <li>Botvinick MM, Braver TS, Barch DM, Carter CS, Cohen JD. Conflict monitoring and cognitive
+            control. Psychol Rev. 2001; 108:624–52. [PubMed: 11488380]</li>
+          <li>Bush G, Luu P, Posner MI. Cognitive and emotional influences in anterior cingulate cortex.
+            Trends Cogn Sci. 2000; 4:215–22. [PubMed: 10827444]</li>
+          <li>Carter, CS.; Krug, MK. Dynamic cognitive control and frontal-cingulate interactions. Posner;
+            2012. p. 89-98.</li>
+          <li>Corbetta M, Akbudak E, Conturo TE, Snyder AZ, Ollinger JM, et al. A common network of functional
+            areas for attention and eye movements. Neuron. 1998; 21:761–73. [PubMed: 9808463]</li>
+          <li>Corbetta M, Shulman GL. Control of goal-directed and stimulus-driven attention in the brain. Nat
+            Rev Neurosci. 2002; 3:201–15. [PubMed: 11994752]</li>
+          <li>Coull JT, Frith CD, Buchel C, Nobre AC. Orienting attention in time: behavioural and
+            neuroanatomical distinction between exogenous and endogenous shifts. Neuropsychologia. 2000;
+            38:808–19. [PubMed: 10689056]</li>
+          <li>Crottaz-Herbette S, Menon V. Where and when the anterior cingulate cortex modulates attentional
+            response: combined fMRI and ERP evidence. J Cogn Neurosci. 2006; 18:766–80. [PubMed: 16768376]
+          </li>
+          <li>Davidson MC, Marrocco RT. Local infusion of scopolamine into intraparietal cortex slows covert
+            orienting in rhesus monkeys. J Neurophysiol. 2000; 83:1536–49. [PubMed: 10712478]</li>
+          <li>Dehaene S, Changeux JP. Experimental and theoretical approaches to conscious processing. Neuron.
+            2011; 70:200–27. [PubMed: 21521609]</li>
+          <li>Dehaene S, Posner MI, Tucker DM. Localization of a neural system for error detection and
+            compensation. Psychol Sci. 1994; 5:303–5.</li>
+          <li>Desimone R, Duncan J. Neural mechanisms of selective visual attention. Annu Rev Neurosci. 1995;
+            18:193–222. [PubMed: 7605061]</li>
+          <li>Donaldson DI, Petersen SE, Ollinger JM, Buckner RL. Dissociating state and item components of
+            recognition memory using fMRI. Neuroimage. 2001; 13:129–42. [PubMed: 11133316]</li>
+          <li>Dosenbach NUF, Fair DA, Cohen AL, Schlaggar BL, Petersen SE. A dual-networks architecture of
+            top-down control. Trends Cogn Sci. 2008; 12:99–105. [PubMed: 18262825]</li>
+          <li>Dosenbach NUF, Fair DA, Miezin FM, Cohen AL, Wenger KK, et al. Distinct brain networks for
+            adaptive and stable task control in humans. Proc Natl Acad Sci USA. 2007; 104:11073–78. [PubMed:
+            17576922]</li>
+          <li>Dosenbach NUF, Visscher KM, Palmer ED, Miezin FM, Wenger KK, et al. A core system for the
+            implementation of task sets. Neuron. 2006; 50:799–812. [PubMed: 16731517]</li>
+          <li>Driver, J.; Eimer, M.; Macaluso, E.; van Velzen, J. See Kanwisher &amp; Duncan 2004. 2004.
+            Neurobiology of human spatial attention: modulation, generation, and integration; p. 267-300.
+          </li>
+          <li>Duncan J. The locus of interference in the perception of simultaneous stimuli. Psychol Rev.
+            1980; 87:272–300. [PubMed: 7384344]</li>
+          <li>Eisenberger NI, Lieberman MD, Williams KD. Does rejection hurt? An FMRI study of social
+            exclusion. Science. 2003; 302:290–92. [PubMed: 14551436]</li>
+          <li>Etkin A, Egner T, Peraza DM, Kandel ER, Hirsch J. Resolving emotional conflict: a role for the
+            rostral anterior cingulate cortex in modulating activity in the amygdala. Neuron. 2006;
+            51:871–82. [PubMed: 16982430]</li>
+          <li>Everitt BJ, Robbins TW. Central cholinergic systems and cognition. Annu Rev Psychol. 1997;
+            48:649–84. [PubMed: 9046571]</li>
+          <li>Fan J, Flombaum JI, McCandliss BD, Thomas KM, Posner MI. Cognitive and brain consequences of
+            conflict. Neuroimage. 2003a; 18:42–57. [PubMed: 12507442]</li>
+          <li>Fan J, Fossella J, Sommer T, Wu Y, Posner MI. Mapping the genetic variation of executive
+            attention onto brain activity. Proc Natl Acad Sci USA. 2003b; 100:7406–11. [PubMed: 12773616]
+          </li>
+          <li>Fan J, Gu X, Guise KG, Liu X, Fossella J, et al. Testing the behavioral interaction and
+            integration of attentional networks. Brain Cogn. 2009; 70:209–20. [PubMed: 19269079]</li>
+          <li>Fan J, McCandliss BD, Fossella J, Flombaum JI, Posner MI. The activation of attentional
+            networks. Neuroimage. 2005; 26:471–79. [PubMed: 15907304]</li>
+          <li>Fan J, McCandliss BD, Sommer T, Raz A, Posner MI. Testing the efficiency and independence of
+            attentional networks. J Cogn Neurosci. 2002; 14:340–47. [PubMed: 11970796]</li>
+          <li>Fernandez-Duque D, Posner MI. Relating the mechanisms of orienting and alerting.
+            Neuropsychologia. 1997; 35:477–86. [PubMed: 9106276]</li>
+          <li>Fox MD, Snyder AZ, Barch DM, Gusnard DA, Raichle ME. Transient BOLD responses at block
+            transitions. Neuroimage. 2005; 28:956–66. [PubMed: 16043368]</li>
+          <li>Green AE, Munafo MR, DeYoung CG, Fossella JA, Fan J, Gray JR. Using genetic data in cognitive
+            neuroscience: from growing pains to genuine insights. Nat Rev Neurosci. 2008; 9:710–20. [PubMed:
+            19143051]</li>
+          <li>Gunderson, LH.; Holling, CS. Panarchy: Understanding Transformations in Human and Natural
+            Systems. Washington, DC: Island; 2002.</li>
+          <li>Hampton AN, O’Doherty JP. Decoding the neural substrates of reward-related decision making with
+            functional MRI. Proc Natl Acad Sci USA. 2007; 104:1377–82. [PubMed: 17227855]</li>
+          <li>Harter MR, Guido W. Attention to pattern orientation: negative cortical potentials, reaction
+            time, and the selection process. Electroencephalogr Clin Neurophysiol. 1980; 49:461–75. [PubMed:
+            6158428]</li>
+          <li>Hillyard, SA.; Di Russo, F.; Martinez, A. See Kanwisher & Duncan 2004. 2004. The imaging of
+            visual attention; p. 381-90.</li>
+          <li>Hubbard EM, Piazza M, Pinel P, Dehaene S. Interactions between number and space in parietal
+            cortex. Nat Rev Neurosci. 2005; 6:435–48. [PubMed: 15928716]</li>
+          <li>Ito S, Stuphorn V, Brown JW, Schall JD. Performance monitoring by the anterior cingulate cortex
+            during saccade countermanding. Science. 2003; 302:120–22. [PubMed: 14526085]</li>
+          <li>Ivry, R.; Robertson, LC. Two Sides of Perception. Cambridge, MA: MIT Press; 1997.</li>
+          <li>Jones L, Rothbart MK, Posner MI. Development of inhibitory control in preschool children. Dev
+            Sci. 2003; 6:498–504.</li>
+          <li>Kampe KK, Frith CD, Frith U. “Hey John”: signals conveying communicative intention toward the
+            self activate brain regions associated with “mentalizing,” regardless of modality. J Neurosci.
+            2003; 23:5258–63. [PubMed: 12832550]</li>
+          <li>Kanwisher, N.; Duncan, J., editors. Attention and Performance XX: Functional Brain Imaging of
+            Visual Cognition. Oxford, UK: Oxford Univ. Press; 2004.</li>
+          <li>Klingberg, T. See Posner 2012b. 2012. Training working memory and attention; p. 475-86.</li>
+          <li>Konishi S, Donaldson DI, Buckner RL. Transient activation during block transition. Neuroimage.
+            2001; 13:364–74. [PubMed: 11162276]</li>
+          <li>Larsen H, van der Zwaluw CS, Overbeek G, Granic I, Franke B, Engels RC. A
+            variable-number-of-tandem-repeats polymorphism in the dopamine D4 receptor gene affects social
+            adaptation of alcohol use: investigation of a gene-environment interaction. Psychol Sci. 2010;
+            21:1064–68. [PubMed: 20610847]</li>
+          <li>Lindner A, Iyer A, Kagan I, Andersen RA. Human posterior parietal cortex plans where to reach
+            and what to avoid. J Neurosci. 2010; 30:11715–25. [PubMed: 20810892]</li>
+          <li>Marrocco, RT.; Davidson, MC. Neurochemistry of attention. In: Parasuraman, R., editor. The
+            Attentive Brain. Cambridge, MA: MIT Press; 1998. p. 35-50.</li>
+          <li>Morrison JH, Foote SL. Noradrenergic and serotoninergic innervation of cortical, thalamic and
+            tectal visual structures in Old and New World monkeys. J Comp Neurol. 1986; 243:117–28. [PubMed:
+            3950077]</li>
+          <li>Moruzzi G, Magoun HW. Brainstem reticular formation and activation of the EEG.
+            Electroencephalogr Clin Neurophysiol. 1949; 1:455–73. [PubMed: 18421835]</li>
+          <li>Nagai Y, Critchley HD, Featherstone E, Fenwick PB, Trimble MR, Dolan RJ. Brain activity relating
+            to the contingent negative variation: an fMRI investigation. Neuroimage. 2004; 21:1232–41.
+            [PubMed: 15050551]</li>
+          <li>Ochsner KN, Bunge SA, Gross JJ, Gabrieli JD. Rethinking feelings: an FMRI study of the cognitive
+            regulation of emotion. J Cogn Neurosci. 2002; 14:1215–29. [PubMed: 12495527]</li>
+          <li>Ploran EJ, Nelson SM, Velanova K, Donaldson DI, Petersen SE, Wheeler ME. Evidence accumulation
+            and the moment of recognition: dissociating perceptual recognition processes using fMRI. J
+            Neurosci. 2007; 27:11912–24. [PubMed: 17978031]</li>
+          <li>Posner, MI. Psychobiology of attention. In: Gazzaniga, M.; Blakemore, C., editors. Handbook of
+            Psychobiology. New York: Academic; 1975. p. 441-80.</li>
+          <li>Posner, MI. Attention in the Social World. New York: Oxford Univ. Press; 2012a.</li>
+          <li>Posner, MI. Cognitive Neuroscience of Attention. New York: Guilford; 2012b.</li>
+          <li>Posner MI, Petersen SE. The attention system of the human brain. Annu Rev Neurosci. 1990;
+            13:25–42. [PubMed: 2183676]</li>
+          <li>Posner MI, Rothbart MK. Research on attention networks as a model for the integration of
+            psychological science. Annu Rev Psychol. 2007; 58:1–23. [PubMed: 17029565]</li>
+          <li>Posner MI, Rothbart MK, Sheese BE, Voelker P. Control networks and neuromodulators of early
+            development. Dev Psychol. 2012 In press.</li>
+          <li>Power JD, Cohen AL, Nelson SM, Vogel AC, Church JA, et al. Functional network organization in
+            the human brain. Neuron. 2011; 72:665–78. [PubMed: 22099467]</li>
+          <li>Rainville P, Duncan GH, Price DD, Carrier B, Bushnell MC. Pain affect encoded in human anterior
+            cingulate but not somatosensory cortex. Science. 1997; 277:968–71. [PubMed: 9252330]</li>
+          <li>Rizzolatti G, Riggio L, Dascola I, Umiltá C. Reorienting attention across the horizontal and
+            vertical
+            meridians: evidence in favor of a premotor theory of attention. Neuropsychologia. 1987;
+            25:31–40.
+            [PubMed: 3574648]</li>
+          <li>Rossi AF, Bichot NP, Desimone R, Ungerleider LG. Top down attentional deficits in macaques with
+            lesions of lateral prefrontal cortex. J Neurosci. 2007; 27:11306–14. [PubMed: 17942725]</li>
+          <li>Rothbart, MK. Becoming Who We Are. New York: Guilford; 2011.</li>
+          <li>Rothbart MK, Sheese BE, Rueda MR, Posner MI. Developing mechanisms of self-regulation in early
+            life. Emot Rev. 2011; 3:207–13. [PubMed: 21892360]</li>
+          <li>Rueda MR, Rothbart MK, McCandliss BD, Saccomanno L, Posner MI. Training, maturation, and
+            genetic influences on the development of executive attention. Proc Natl Acad Sci USA. 2005;
+            102:14931–36. [PubMed: 16192352]</li>
+          <li>Schafer RJ, Moore T. Attention governs action in the primate frontal eye field. Neuron. 2007;
+            56:541–
+            51. [PubMed: 17988636]</li>
+          <li>Sheese BE, Voelker PM, Rothbart MK, Posner MI. Parenting quality interacts with genetic
+            variation in
+            dopamine receptor D4 to influence temperament in early childhood. Dev Psychopathol. 2007;
+            19:1039–46. [PubMed: 17931433]</li>
+          <li>Shulman, GL.; Corbetta, M. See Posner 2012b. 2012. Two attentional networks: identification and
+            function within a larger cognitive architecture; p. 113-27.</li>
+          <li>Sridharan D, Levitin DJ, Chafe CH, Berger J, Menon V. Neural dynamics of event segmentation in
+            music: converging evidence for dissociable ventral and dorsal networks. Neuron. 2007; 55:521–
+            32. [PubMed: 17678862]</li>
+          <li>Sridharan D, Levitin DJ, Menon V. A critical role for the right fronto-insular cortex in
+            switching
+            between central-executive and default-mode networks. Proc Natl Acad Sci USA. 2008;
+            105:12569–74. [PubMed: 18723676]</li>
+          <li>Stewart C, Burke S, Marrocco R. Cholinergic modulation of covert attention in the rat.
+            Psychopharmacology. 2001; 155:210–18. [PubMed: 11401012]</li>
+          <li>Sturm W, Willmes K. On the functional neuroanatomy of intrinsic and phasic alertness.
+            Neuroimage.
+            2001; 14:S76–84. [PubMed: 11373136]</li>
+          <li>Tang YY, Ma Y, Fan Y, Feng H, Wang J, et al. Central and autonomic nervous system interaction is
+            altered by short-term meditation. Proc Natl Acad Sci USA. 2009; 106:8865–70. [PubMed:
+            19451642]</li>
+          <li>Tang YY, Ma Y, Wang J, Fan Y, Feng S, et al. Short-term meditation training improves attention
+            and self-regulation. Proc Natl Acad Sci USA. 2007; 104:17152–56. [PubMed: 17940025]</li>
+          <li>Thompson KG, Biscoe KL, Sato TR. Neuronal basis of covert spatial attention in the frontal eye
+            field. J Neurosci. 2005; 25:9479–87. [PubMed: 16221858]</li>
+          <li>Voytko ML, Olton DS, Richardson RT, Gorman LK, Tobin JR, Price DL. Basal forebrain lesions in
+            monkeys disrupt attention but not learning and memory. J Neurosci. 1994; 14:167–86. [PubMed:
+            8283232]</li>
+          <li>Walter G. The convergence and interaction of visual, auditory, and tactile responses in human
+            non-specific cortex. Ann N Y Acad Sci. 1964; 112:320–61. [PubMed: 14188105]</li>
+          <li>Womelsdorf T, Schoffelen JM, Oostenveld R, Singer W, Desimone R, et al. Modulation of neuronal
+            interactions through neuronal synchronization. Science. 2007; 316:1609–12. [PubMed: 17569862]
+          </li>
+          <li>Wright, RD.; Ward, LM. Orienting of Attention. Oxford/New York: Oxford Univ. Press; 2008.</li>
+          <li>Zilles, K. Evolution of the human brain and comparative cyto- and receptor architecture. In:
+            Dehaene, S.; Duhamel, J-R.; Hauser, MD.; Rizzolatti, G., editors. From Monkey Brain to Human
+            Brain. Cambridge, MA: MIT Press/Bradford Books; 2005. p. 41-56.</li>
+        </ul>
+    </section>
+    <section>
+      <a href="#top" style="padding-left: 10px;">upwards</a>
+    </section>
   </main>
+  <footer>
+    <address><a href="imprint.html">Imprint</a> | <a href="privacy.html">Privacy</a> | <a
+        href="https://github.com/afdzlebron/22ws_bok_html_project" target="_blank">Github-Repository</a>
+    </address>
+  </footer>
+  <script src="https://code.jquery.com/jquery-latest.js"></script>
+  <script src="http://cdn.rawgit.com/noelboss/featherlight/1.7.1/release/featherlight.min.js" type="text/javascript"
+    charset="utf-8"></script>
 
+  <script type="text/javascript">
+    $(function () {
+      $('header a.icon').click(function () {
+        $('nav').toggleClass('responsive');
+      });
+    });
+  </script>
 </body>
 
 </html>
