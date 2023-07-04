@@ -35,7 +35,7 @@
     <pre>
 
 
-    aUFGABe 0::
+    AUfgabe0:
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -405,55 +405,42 @@
     }
     
     int BDD::count_fundamental_true_path() const {
-      /*NEW ÜB 10, Aufgabe 10*/
       // Wir erstellen einen Stack, um die Knoten zu speichern, die wir noch
       // besuchen müssen.
       std::stack<Node *> stack;
-    
       // Wir initialisieren die Anzahl der fundamentalen Lösungen mit 0
       int path = 0;
-    
       // Wenn der BDD leer ist, geben wir 0 zurück
       if (!root) return 0;
-    
       // Wir fügen den Wurzelknoten zum Stack hinzu
       stack.push(root);
-    
       // Wir bearbeiten den Stack, bis er leer ist
       while (!stack.empty()) {
         // Wir nehmen den obersten Knoten vom Stack
         Node *b = stack.top();
         stack.pop();
-    
         // Wenn der Knoten das wahre Blatt ist, erhöhen wir die Anzahl der
         // fundamentalen Lösungen um 1 und fahren fort
         if (b == true_node) {
           ++path;
           continue;
         }
-    
-        // Wenn der Knoten das falsche Blatt ist, fahren wir fort
-        if (b == false_node) continue;
-    
-        // Wenn der Knoten bereits besucht wurde (to_delete ist true), fahren wir
-        // fort. Dies vermeidet, dass wir symmetrische Lösungen doppelt zählen
-        if (b->to_delete) continue;
-    
+        // Wenn der Knoten das falsche Blatt ist oder bereits besucht wurde
+        // (to_delete ist true), fahren wir fort. Dies vermeidet, dass wir
+        // symmetrische Lösungen doppelt zählen
+        if (b == false_node || b->to_delete) continue;
         // Wir markieren den Knoten als besucht, indem wir to_delete auf true
         // setzen.
         b->to_delete = true;
-    
         // Wir fügen beide Nachfolger des Knotens zum Stack hinzu
         stack.push(b->if_true);
         stack.push(b->if_false);
       }
-    
       // Wir setzen alle to_delete-Flags wieder auf false, um den BDD nicht zu
       // verändern.
       for (auto &n : nodes) {
         n->to_delete = false;
       }
-    
       // Wir geben die Anzahl der fundamentalen Lösungen zurück
       return path;
     }
@@ -698,9 +685,9 @@
     }
     
     bool Board::has_symmetries() const {
-      // Wir überprüfen zuerst die Symmetrie (B)
-      // Dazu vergleichen wir die Positionen der Damen in der ersten und letzten
-      // Spalte
+      // Wir überprüfen zuerst die Symmetrie (B) // Hier haben wir die Reihenfolge
+      // geändert Dazu vergleichen wir die Positionen der Damen in der ersten und
+      // letzten Spalte
       int first =
           -1;  // Die Position der Dame in der ersten Spalte oder -1, wenn leer
       int last =
@@ -721,10 +708,12 @@
       // Symmetrie (B)
       if (first == -1 || last == -1) return false;
       // Wenn die Dame in der letzten Spalte eine höhere Position hat als die Dame
-      // in der ersten Spalte, gibt es keine Symmetrie (B)
-      if (last > first) return false;
+      // in der ersten Spalte, gibt es keine vertikale Symmetrie (B)
+      if (last > first) {
+        return false;
+      }
     
-      // Wir prüfen nun die Symmetrie (A)
+      // Wir prüfen nun die Symmetrie (A) // Hier haben wir die Reihenfolge geändert
       // Dazu iterieren wir über die Spalten von links nach rechts und schauen, ob
       // die Dame in der oberen Hälfte steht
       bool need_horizontal_flip =
@@ -734,23 +723,12 @@
         assert(board[i] >= 0);
         // Wenn die Spalte leer ist, überspringen wir sie
         if (board[i] == 0) continue;
-        // Wenn die Dame in der unteren Hälfte steht, brauchen wir eine horizontale
-        // Spiegelung
-        if (board[i] > size / 2) {
-          need_horizontal_flip = true;
-          break;
-        }
-        // Wenn die Dame genau in der Mitte steht und die Größe ungerade ist,
-        // brauchen wir auch eine horizontale Spiegelung
-        if (board[i] == size / 2 + 1 && size % 2 == 1) {
-          need_horizontal_flip = true;
-          break;
+        // Wenn die Dame in der unteren Hälfte steht oder genau in der Mitte bei
+        // ungerader Größe steht, gibt es keine horizontale Symmetrie (A)
+        if (board[i] > size / 2 || (board[i] == size / 2 + 1 && size % 2 == 1)) {
+          return false;
         }
       }
-      // Wenn wir eine horizontale Spiegelung brauchen, gibt es keine horizontale
-      // Symmetrie (A)
-      if (need_horizontal_flip) return false;
-    
       // Wenn alle Damen die Symmetrien erfüllen, geben wir true zurück
       return true;
     }
