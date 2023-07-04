@@ -35,7 +35,7 @@
     <pre>
 
 
-    AUfgabe0:
+    AUfgabE 0:
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -289,35 +289,55 @@
     </pre>
     Here is bdd.cpp:
     <pre><code>
+    #include "bdd.hpp"
+    
     #include <vector>
     
-    #include "bdd.hpp"
     #include "stack.hpp"
     
-    /* ÜB 10, Aufgabe 10*/
+    // This function imports a Board and returns a node
+    // nodes are set to the false node automatically
+    //
+    // NEW ÜB10
+    // If the node has symmetries, we check if the fundamental node is already
+    // present and set the already_exists parameter
     Node *BDD::import_node(const Board &b, bool &already_exists) {
       Board a = b;
     
       const bool not_normalized = a.has_symmetries();
       Node *n;
     
-      const bool ub10_aufgabe10_schon_implementiert = false;
-      if (ub10_aufgabe10_schon_implementiert && not_normalized) {
-        /*NEW ÜB 10, Aufgabe 10*/
-        /*TODO ÜB 10, Aufgabe 10*/
-        /*nicht vergessen ub10_aufgabe10_schon_implementiert zu löschen!*/
-        assert(false);
+      // check if the position has symmetries
+      if (not_normalized) {
+        // normalize the position by applying horizontal and/or vertical flips
+        a.symmetry_normalize();
+    
+        // search for the normalized position in the existing nodes
+        Node dummy(0, a);  // create a dummy node with the normalized position
+        auto it = nodes.find(&dummy);  // use the find method of std::set
+        if (it != nodes.end()) {
+          // if the node is found, set the already_exists flag to true
+          already_exists = true;
+          // return the existing node
+          return *it;
+        } else {
+          // if the node is not found, set the already_exists flag to false
+          already_exists = false;
+          // create a new node with the normalized position and a fresh id
+          n = new Node(fresh_id, a);
+        }
       } else {
+        // if the position has no symmetries, set the already_exists flag to false
         already_exists = false;
-        n = new Node(fresh_id, a);
+        // create a new node with the original position and a fresh id
+        n = new Node(fresh_id, b);
       }
     
       ++fresh_id;
       // NEW ÜB10: adapted to std::set
       nodes.insert(n);
     
-      if (!root)
-        root = n;
+      if (!root) root = n;
       return n;
     }
     
@@ -348,8 +368,7 @@
       Stack<Node *> queue;
       int path = 0;
     
-      if (!root)
-        return 0;
+      if (!root) return 0;
     
       queue.push(root);
     
@@ -360,8 +379,7 @@
           ++path;
           continue;
         }
-        if (b == false_node)
-          continue;
+        if (b == false_node) continue;
     
         queue.push(b->if_true);
         queue.push(b->if_false);
@@ -378,8 +396,7 @@
     
     std::ostream &operator<<(std::ostream &stream, const BDD &bdd) {
       std::vector<Node *> queue;
-      if (bdd.root)
-        queue.push_back(bdd.root);
+      if (bdd.root) queue.push_back(bdd.root);
       const std::string true_name("true");
       const std::string false_name("false");
     
@@ -421,7 +438,8 @@
       return false;
     }
     
-    // remove useless parts of the entire BDD, by checking if the root should be removed
+    // remove useless parts of the entire BDD, by checking if the root should be
+    // removed
     void BDD::normalize_bdd() {
       /*NEW ÜB 10, Aufgabe 11*/
       /*TODO ÜB 10, Aufgabe 11*/
@@ -950,10 +968,10 @@
     </code></pre>
     Here is nqueens.cpp:
     <pre><code>
+    #include "nqueens.hpp"
+    
     #include <fstream>
     #include <stack>
-    
-    #include "nqueens.hpp"
     
     void NQueens::check_and_add_child(Node *parent, bool direction,
                                       std::stack<Node *> &stack) {
@@ -977,8 +995,7 @@
       } else {
         bool already_exists = false;
         Node *child = bdd.import_node(b, already_exists);
-        if (!already_exists)
-          stack.push(child);
+        if (!already_exists) stack.push(child);
         bdd.connect(parent, child, direction);
       }
       return;
@@ -987,8 +1004,8 @@
     void NQueens::construct_bdd() {
       /*ÜB10, Aufgabe 6*/
       Board b(size);
-      std::stack<Node *> stack;
-    
+      std::stack<Node *>
+          stack;  // specify the type of the element stored in the stack
       bool already_exists = false;
       Node *n = bdd.import_node(b, already_exists);
       stack.push(n);
@@ -1000,33 +1017,34 @@
         Node *n = stack.top();
         stack.pop();
     
-        check_and_add_child(n, false, stack);
-        check_and_add_child(n, true, stack);
-        visited_nodes += 2;
+        // check both successors of n and add them to stack if needed
+        for (bool direction : {false, true}) {
+          check_and_add_child(n, direction, stack);
     
-        if (visited_nodes >= next_limit) {
-          // NEW ÜB10
-          /* ÜB 10, Aufgabe 11*/
-          // This is new compared to the ÜB9
-          // we reduce the BDD, in increasingly large limits.
-          // I have not tried to optimize the numbers, but it seems to work more or
-          // less
-          //
-          // ÜB10, Aufgabe 11
-          next_limit *= 2;
-          bdd.normalize_bdd();
+          // NEW ÜB10: adapted to std::set
+          // check if we need to skip this child because it already exists after
+          // normalization
+          if (already_exists) {
+            // do nothing if the child already exists
+            continue;
+          }
+    
+          visited_nodes += 1;
+    
+          if (visited_nodes >= next_limit) {
+            /* ÜB 10, Aufgabe 11*/
+            // This is new compared to the ÜB9
+            // we reduce the BDD, in increasingly large limits
+            // I have not tried to optimize the numbers, but it seems to work more
+            // or less
+    
+            next_limit *= 2;
+            bdd.normalize_bdd();
+          }
         }
       }
     
       bdd.normalize_bdd();
-    /*
-      std::ofstream myfile;
-      myfile.open("small_test_bdd_symmetry.txt");
-      if (myfile.is_open()) {
-        myfile << bdd;
-        myfile.close();
-      }
-      */
     }
     </code></pre>
     Here is nqueensMain.cpp:
