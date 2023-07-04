@@ -41,7 +41,7 @@
     <pre>
 
 
-        aufGabe 0:
+        Aufgabe 0:
     
         Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
         In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -110,26 +110,43 @@
               Sonst kann das Schachbrett vertikal gespiegelt werden, um dasselbe Ergebnis zu erzielen.
           
           Ein Beispiel:
-          
-              vertikale
-              Spiegelung
-              hier entlang
-              |
-              |
-          | |d| | |
-          | | | |d|
-          ------------ horizontal Spiegelung hier entlang
-          |d| | | |
-          | | |d| |
-              |
-              |
-          
+
+          ```
+          "| |d| | | \n"
+          "| | | |d| \n"
+          "|d| | | | \n"
+          "| | |d| | \n" ```
+
+          hat eine vertikale Spiegelung (markiert mit `||`):
+
+          ```
+          "| |d|| | | \n"
+          "| | || |d| \n"
+          "|d| || | | \n"
+          "| | ||d| | \n" ```
+
+          und hat eine horizontal Spiegelung hier entlang (markiert mit `-------------`):
+
+          ```
+          "| |d| | | \n"
+          "| | | |d| \n"
+          -------------
+          "|d| | | | \n"
+          "| | |d| | \n" ```
+        sodass: 
+
+        ```
+        "| |d| | | \n"
+        "| | | |d| \n"
+        "|d| | | | \n"
+        "| | |d| | \n" ```
+
           kann auch als wie folgt dargestelle werden:
           ```
-          | | |d| |
-          |d| | | |
-          | | | |d|
-          | |d| | |
+          "| | |d| |\n"
+          "|d| | | |\n"
+          "| | | |d|\n"
+          "| |d| | |\n"
           ```
           
           
