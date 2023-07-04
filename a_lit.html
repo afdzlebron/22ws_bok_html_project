@@ -35,7 +35,7 @@
     <pre>
 
 
-    AUFGABE 0::
+    Aufgabe 0:
 
     Im Laufe der nächsten Übungen werden wir uns fÜr das Damenproblem (Englisch: "Eight queens puzzle") interessieren. 
     In dem Problem geht es darum, auf einem `n × n`-Brett genau `n` Damen zu platzieren, ohne dass die eine die andere angreifen kann. 
@@ -698,48 +698,53 @@
     }
     
     bool Board::has_symmetries() const {
-      // Wir überprüfen zuerst die Symmetrie (A)
-      // Dazu iterieren wir über die Spalten von links nach rechts und schauen, ob
-      // die Dame in der oberen Hälfte steht
-      bool need_horizontal_flip =
-          false;  // Diese Variable wird auf true gesetzt, wenn wir eine horizontale
-                  // Spiegelung brauchen
+      // Wir überprüfen, ob die Position die beiden Symmetrien (A) und (B) erfüllt
+      // (A): Die Dame steht immer oben in der ersten Hälfte der Spalte
+      // (B): Die Dame in der letzten Spalte hat immer eine niedrigere Position als
+      // die Dame in der ersten Spalte
+      // Wir iterieren über alle Spalten von links nach rechts
+      int first =
+          -1;  // Die Position der Dame in der ersten Spalte oder -1, wenn leer
+      int last =
+          -1;  // Die Position der Dame in der letzten Spalte oder -1, wenn leer
+      for (int i = 0; i < size; ++i) {
+        // Wir suchen nach der ersten nicht-leeren Spalte von links
+        if (first == -1 && board[i] > 0) {
+          first = board[i];
+        }
+        // Wir suchen nach der ersten nicht-leeren Spalte von rechts
+        if (last == -1 && board[size - i - 1] > 0) {
+          last = board[size - i - 1];
+        }
+        // Wenn wir beide gefunden haben, brechen wir die Schleife ab
+        if (first != -1 && last != -1) break;
+      }
+      // Wenn beide Spalten leer sind oder nur eine Spalte leer ist, gibt es keine
+      // Symmetrie (B)
+      if (first == -1 || last == -1) return false;
+      // Wir iterieren nochmal über alle Spalten von links nach rechts
       for (int i = 0; i < size; ++i) {
         assert(board[i] >= 0);
         // Wenn die Spalte leer ist, überspringen wir sie
         if (board[i] == 0) continue;
-        // Wenn die Dame in der unteren Hälfte steht oder genau in der Mitte bei
-        // ungerader Größe, gibt es keine horizontale Symmetrie (A)
+        // Wir überprüfen, ob die Dame in der oberen Hälfte steht oder genau in der
+        // Mitte bei ungerader Größe. Wenn nicht, gibt es keine horizontale
+        // Symmetrie (A)
         if (board[i] > size / 2 || (board[i] == size / 2 + 1 && size % 2 == 1)) {
           return false;
         }
+        // Wenn die Dame in einer anderen Spalte als der ersten oder letzten steht,
+        // müssen wir noch überprüfen, ob sie eine niedrigere Position als die Dame
+        // in der ersten oder eine höhere Position als die Dame in der letzten hat
+        // Wenn ja, gibt es keine vertikale Symmetrie (B)
+        if (i != 0 && i != size - 1) {
+          if (board[i] <= first || board[i] >= last) {
+            return false;
+          }
+        }
       }
-    
-      // Wir überprüfen nun die Symmetrie (B)
-      // Dazu erstellen wir zwei Vektoren, die die Positionen der Damen in
-      // aufsteigender und absteigender Reihenfolge enthalten
-      std::vector<int> ascending;
-      std::vector<int> descending;
-      for (int i = 0; i < size; ++i) {
-        assert(board[i] >= 0);
-        // Wenn die Spalte leer ist, überspringen wir sie
-        if (board[i] == 0) continue;
-        // Wir fügen die Position der Dame zum aufsteigenden Vektor hinzu
-        ascending.push_back(board[i]);
-        // Wir fügen die Position der Dame zum absteigenden Vektor hinzu, indem wir
-        // sie von der Größe subtrahieren
-        descending.push_back(size - board[i] + 1);
-      }
-    
-      // Wir vergleichen die beiden Vektoren und sehen, ob sie gleich sind oder
-      // nicht
-      if (ascending == descending) {
-        // Wenn sie gleich sind, gibt es eine Symmetrie (B)
-        return true;
-      } else {
-        // Wenn sie nicht gleich sind, gibt es keine Symmetrie (B)
-        return false;
-      }
+      // Wenn alle Damen die Symmetrien erfüllen, geben wir true zurück
+      return true;
     }
     
     void Board::horizontal_flip() {
@@ -751,8 +756,12 @@
     }
     
     void Board::vertical_flip() {
+      // Wir iterieren über jede Zeile des Bretts von oben nach unten
       for (int i = 0; i < size / 2; ++i) {
-        std::swap(board[i], board[size - i - 1]);
+        // Wir berechnen den symmetrischen Index einer Zeile als size - i - 1
+        int sym = size - i - 1;
+        // Wir vertauschen die Werte an den Indizes i und sym im Array board
+        std::swap(board[i], board[sym]);
       }
     }
     
